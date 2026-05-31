@@ -1,0 +1,2548 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>بازی شخصیت شناسی مالی + پنل ادمین</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: radial-gradient(circle at 10% 20%, #0a0f1f, #03050c);
+            color: #eef2ff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .glass-card {
+            background: rgba(15, 25, 45, 0.75);
+            backdrop-filter: blur(12px);
+            border-radius: 32px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 24px;
+            margin: 16px auto;
+            max-width: 700px;
+            text-align: center;
+        }
+        .btn {
+            padding: 10px 24px;
+            border-radius: 60px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            background: #1e293b;
+            color: white;
+        }
+        .btn-primary {
+            background: linear-gradient(95deg, #3b82f6, #1e40af);
+        }
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px -5px #3b82f6;
+        }
+        .selection-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 12px;
+            margin: 15px 0;
+        }
+        .selection-btn {
+            background: #0f172a;
+            border: 2px solid #334155;
+            border-radius: 60px;
+            padding: 8px 24px;
+            cursor: pointer;
+            color: #cbd5e1;
+        }
+        .selection-btn.selected {
+            background: #3b82f6;
+            border-color: #94a3f8;
+            color: white;
+        }
+        input {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 60px;
+            padding: 12px;
+            width: 100%;
+            color: white;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .guide-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(8px);
+            z-index: 3000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+        .guide-card {
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            border: 2px solid #3b82f6;
+            border-radius: 48px;
+            padding: 32px;
+            max-width: 500px;
+            width: 85%;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(59,130,246,0.4);
+            animation: bounceIn 0.4s ease;
+        }
+        .guide-card h3 {
+            color: #fbbf24;
+            font-size: 1.8rem;
+            margin-bottom: 16px;
+        }
+        .guide-card p {
+            color: #e2e8f0;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 24px;
+            white-space: pre-line;
+        }
+        .guide-card button {
+            background: linear-gradient(95deg, #3b82f6, #1e40af);
+            border: none;
+            padding: 12px 32px;
+            border-radius: 60px;
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .guide-card button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px #3b82f6;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes bounceIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            80% { transform: scale(1.02); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        
+        .scenario-row {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 25px;
+            margin: 20px 0;
+        }
+        .scenario-row .selection-btn {
+            width: 200px;
+            padding: 25px 20px;
+            text-align: center;
+            display: block;
+            border-radius: 28px;
+        }
+
+        .asset-row {
+            background: #0f172a;
+            border-radius: 20px;
+            padding: 12px 18px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .asset-controls button {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #1e293b;
+            border: none;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+        .asset-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            min-width: 70px;
+            text-align: center;
+        }
+        .steps-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin: 20px 0;
+            flex-wrap: nowrap;
+        }
+        .step-item {
+            flex: 1;
+            text-align: center;
+            min-width: 60px;
+        }
+        .step-circle {
+            width: 48px;
+            height: 48px;
+            background: #1f2a44;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin: 0 auto 6px;
+            border: 2px solid #2d3a5e;
+        }
+        .step-circle.active {
+            background: #3b82f6;
+            border-color: #94a3f8;
+            box-shadow: 0 0 12px #3b82f6;
+        }
+        .step-circle.completed {
+            background: #22c55e;
+        }
+        .step-label {
+            font-size: 11px;
+            color: #94a3b8;
+        }
+        .step-line {
+            height: 3px;
+            background: #2d3a5e;
+            flex: 1;
+        }
+        .info-line {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 16px;
+            font-size: 14px;
+        }
+        .capital-large {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #22c55e;
+        }
+        .asset-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 16px;
+            justify-content: center;
+        }
+        .asset-stat-badge {
+            background: #1e293b;
+            border-radius: 40px;
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        .fullscreen-stage3 {
+            background: rgba(15, 25, 45, 0.75);
+            backdrop-filter: blur(12px);
+            border-radius: 32px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 20px;
+            margin: 0;
+            max-width: 100%;
+        }
+
+        .reaction-option {
+            background: #0f172a;
+            border: 2px solid #334155;
+            border-radius: 24px;
+            padding: 16px;
+            cursor: pointer;
+            text-align: center;
+            transition: 0.2s;
+        }
+        .reaction-option:hover {
+            border-color: #3b82f6;
+            transform: translateY(-3px);
+            background: #1e293b;
+        }
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .info-box {
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .fun-toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 2px solid #fbbf24;
+            border-radius: 48px;
+            padding: 20px 32px;
+            z-index: 4000;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            animation: toastPop 0.4s ease forwards;
+            max-width: 90%;
+        }
+        .fun-toast .emoji {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+        .fun-toast .message {
+            font-size: 1.2rem;
+            color: #fbbf24;
+            font-weight: bold;
+        }
+        .fun-toast .sub-message {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-top: 8px;
+        }
+        @keyframes toastPop {
+            0% { transform: translate(-50%, -50%) scale(0.8); opacity: 0; }
+            80% { transform: translate(-50%, -50%) scale(1.05); }
+            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+        }
+
+        .quiz-option {
+            background: #0f172a;
+            border: 2px solid #334155;
+            border-radius: 24px;
+            padding: 14px 18px;
+            cursor: pointer;
+            text-align: center;
+            transition: 0.2s;
+            margin-bottom: 12px;
+            font-size: 1rem;
+        }
+        .quiz-option:hover {
+            border-color: #3b82f6;
+            transform: translateY(-2px);
+            background: #1e293b;
+        }
+        .section-badge {
+            display: inline-block;
+            background: #fbbf24;
+            color: #0f172a;
+            padding: 4px 12px;
+            border-radius: 40px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .question-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+            line-height: 1.5;
+            color: #38bdf8;
+            text-shadow: 0 0 5px rgba(56,189,248,0.3);
+        }
+        .score-bar {
+            background: rgba(0,0,0,0.3);
+            border-radius: 60px;
+            padding: 8px 16px;
+            margin-bottom: 15px;
+            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .score-item {
+            background: #1e293b;
+            border-radius: 40px;
+            padding: 5px 15px;
+            font-size: 13px;
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border-radius: 24px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 2px solid #3b82f6;
+        }
+        .personality-emoji {
+            font-size: 3rem;
+            margin-bottom: 8px;
+        }
+        .personality-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .personality-desc {
+            font-size: 0.85rem;
+            color: #94a3b8;
+        }
+        .score-box {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .score-item-result {
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            padding: 12px;
+            flex: 1;
+            text-align: center;
+            min-width: 100px;
+        }
+        .score-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .chart-container {
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .advice-text {
+            background: rgba(59,130,246,0.2);
+            border-right: 4px solid #3b82f6;
+            padding: 20px;
+            border-radius: 16px;
+            margin: 20px 0;
+            line-height: 1.9;
+        }
+        .advice-text p {
+            margin-bottom: 12px;
+        }
+        .advice-title {
+            color: #fbbf24;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .detail-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 13px;
+        }
+        .detail-table td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #334155;
+        }
+        .detail-table tr:last-child td {
+            border-bottom: none;
+        }
+        .detail-label {
+            color: #94a3b8;
+            width: 35%;
+        }
+        .detail-value {
+            color: #fbbf24;
+            font-weight: bold;
+        }
+        .reaction-badge {
+            display: inline-block;
+            background: #1e293b;
+            border-radius: 20px;
+            padding: 5px 12px;
+            margin: 4px;
+            font-size: 12px;
+        }
+        .fun-toast .toast-button {
+            background: linear-gradient(95deg, #8b5cf6, #6d28d9);
+            border: none;
+            padding: 10px 25px;
+            border-radius: 60px;
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        /* استایل پنل ادمین */
+        .admin-glass-card {
+            background: rgba(15, 25, 45, 0.75);
+            backdrop-filter: blur(12px);
+            border-radius: 32px;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 24px;
+            margin: 16px auto;
+            max-width: 1600px;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px,1fr));
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .stat-card {
+            background: #1e293b;
+            border-radius: 20px;
+            padding: 15px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 1.6rem;
+            font-weight: bold;
+        }
+        .bar-container {
+            background: #2d3a5e;
+            border-radius: 10px;
+            height: 25px;
+            margin: 8px 0;
+            overflow: hidden;
+        }
+        .bar-fill {
+            height: 100%;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            color: white;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: #1e293b;
+            border-radius: 16px;
+            overflow: hidden;
+            font-size: 11px;
+        }
+        th, td {
+            padding: 8px 5px;
+            border-bottom: 1px solid #334155;
+            text-align: center;
+        }
+        th {
+            background: #334155;
+            font-weight: bold;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .page-btn {
+            background: #1e293b;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 20px;
+            color: white;
+            cursor: pointer;
+        }
+        .page-btn.active {
+            background: #3b82f6;
+        }
+        .admin-panel {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 5000;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        .gender-tab {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .gender-btn-tab {
+            padding: 5px 15px;
+            border-radius: 60px;
+            background: #1e293b;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        .gender-btn-tab.active {
+            background: #3b82f6;
+        }
+        .chart-card {
+            background: #1e293b;
+            border-radius: 20px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .chart-card h4 {
+            color: #fbbf24;
+            margin-bottom: 15px;
+            text-align: center;
+            font-size: 1rem;
+        }
+
+        @media (max-width: 768px) {
+            .scenario-row { flex-direction: column; align-items: center; }
+            .glass-card { max-width: 95%; padding: 16px; }
+            .scenario-row .selection-btn { width: 100%; }
+            .step-circle { width: 38px; height: 38px; font-size: 1rem; }
+            .step-label { font-size: 9px; }
+            .capital-large { font-size: 1.4rem; }
+            .asset-row { flex-direction: column; gap: 10px; }
+            .asset-controls { display: flex; gap: 15px; align-items: center; }
+            .info-line { font-size: 12px; }
+            .options-grid { grid-template-columns: 1fr; }
+            .quiz-option { padding: 10px 12px; font-size: 0.9rem; }
+            .question-text { font-size: 1.2rem; }
+            .stats-grid { grid-template-columns: repeat(2,1fr); }
+            th, td { font-size: 9px; padding: 4px 2px; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="topBar" class="glass-card" style="text-align: center;">
+    <h1 style="color: #38bdf8;">🎮 بازی شخصیت شناسی مالی</h1>
+    <p style="color: #38bdf8; font-size: 14px; margin-top: 8px;">🔹 این بازی بر اساس مقالات معتبر مالی تهیه شده است</p>
+</div>
+
+<div id="adminBtnContainer" style="display: flex; justify-content: center; margin: 10px auto; gap: 15px;">
+    <button id="adminBtn" class="btn" style="background: linear-gradient(95deg, #8b5cf6, #6d28d9);">👑 پنل ادمین</button>
+    <button id="showDataBtn" class="btn" style="background: linear-gradient(95deg, #10b981, #047857);">📊 مشاهده داده‌های ذخیره شده</button>
+</div>
+
+<div class="glass-card" id="stageContainer">
+    <h2 style="color:#fbbf24; margin-bottom:20px;">📋 اطلاعات شما</h2>
+    <input type="text" id="userName" placeholder="نام و نام خانوادگی">
+    <div><p>جنسیت:</p>
+    <div class="selection-group">
+        <div class="selection-btn gender-btn" data-gender="male">👨 مرد</div>
+        <div class="selection-btn gender-btn" data-gender="female">👩 زن</div>
+    </div></div>
+    <div><p>بازه سنی:</p>
+    <div class="selection-group">
+        <div class="selection-btn age-btn" data-age="18-25">۱۸-۲۵</div>
+        <div class="selection-btn age-btn" data-age="26-35">۲۶-۳۵</div>
+        <div class="selection-btn age-btn" data-age="36-45">۳۶-۴۵</div>
+        <div class="selection-btn age-btn" data-age="46-60">۴۶-۶۰</div>
+        <div class="selection-btn age-btn" data-age="60+">۶۰+</div>
+    </div></div>
+    <button id="nextBtn" class="btn btn-primary" style="margin-top:25px;">مرحله بعد ➡</button>
+</div>
+
+<div id="adminPanel" class="admin-panel">
+    <div class="admin-glass-card" style="max-width: 1600px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap;">
+            <h2 style="color: #fbbf24;">👑 پنل مدیریت داده‌ها و تحلیل آماری</h2>
+            <button id="closeAdminPanel" class="btn" style="background: linear-gradient(95deg, #ef4444, #b91c1c);">✖ بستن</button>
+        </div>
+        
+        <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 25px;">
+            <button id="addSampleData" class="btn btn-primary">➕ افزودن داده نمونه</button>
+            <button id="exportJSON" class="btn btn-primary">📥 خروجی JSON</button>
+            <button id="exportExcel" class="btn" style="background: linear-gradient(95deg, #10b981, #047857);">📊 خروجی اکسل</button>
+            <button id="exportCSV" class="btn" style="background: linear-gradient(95deg, #10b981, #047857);">📄 خروجی CSV</button>
+            <button id="clearAllData" class="btn" style="background: linear-gradient(95deg, #ef4444, #b91c1c);">🗑 حذف همه داده‌ها</button>
+        </div>
+        
+        <div class="stats-grid" id="statsContainer"></div>
+        
+        <div class="chart-card">
+            <h4>📊 توزیع سنی</h4>
+            <div class="gender-tab" id="ageTabs">
+                <div class="gender-btn-tab active" data-gender="all">همه</div>
+                <div class="gender-btn-tab" data-gender="male">مردان</div>
+                <div class="gender-btn-tab" data-gender="female">زنان</div>
+            </div>
+            <div id="ageChart"></div>
+        </div>
+        
+        <div class="chart-card">
+            <h4>🎲 توزیع ریسک‌پذیری</h4>
+            <div class="gender-tab" id="riskTabs">
+                <div class="gender-btn-tab active" data-gender="all">همه</div>
+                <div class="gender-btn-tab" data-gender="male">مردان</div>
+                <div class="gender-btn-tab" data-gender="female">زنان</div>
+            </div>
+            <div id="riskChart"></div>
+        </div>
+        
+        <div class="chart-card">
+            <h4>📚 توزیع دانش مالی</h4>
+            <div class="gender-tab" id="quizTabs">
+                <div class="gender-btn-tab active" data-gender="all">همه</div>
+                <div class="gender-btn-tab" data-gender="male">مردان</div>
+                <div class="gender-btn-tab" data-gender="female">زنان</div>
+            </div>
+            <div id="quizChart"></div>
+        </div>
+        
+        <div class="chart-card">
+            <h4>💰 توزیع سود نهایی</h4>
+            <div class="gender-tab" id="profitTabs">
+                <div class="gender-btn-tab active" data-gender="all">همه</div>
+                <div class="gender-btn-tab" data-gender="male">مردان</div>
+                <div class="gender-btn-tab" data-gender="female">زنان</div>
+            </div>
+            <div id="profitChart"></div>
+        </div>
+        
+        <div class="chart-card">
+            <h4>🏦 درصد سرمایه گذاری در هر دارایی</h4>
+            <div class="gender-tab" id="allocationTabs">
+                <div class="gender-btn-tab active" data-gender="all">همه</div>
+                <div class="gender-btn-tab" data-gender="male">مردان</div>
+                <div class="gender-btn-tab" data-gender="female">زنان</div>
+            </div>
+            <div id="allocationChart"></div>
+        </div>
+
+        <div class="chart-card">
+            <h4>📈 نسبت شارپ (بازده تعدیل شده با ریسک)</h4>
+            <div class="gender-tab" id="sharpeTabs">
+                <div class="gender-btn-tab active" data-gender="all">همه</div>
+                <div class="gender-btn-tab" data-gender="male">مردان</div>
+                <div class="gender-btn-tab" data-gender="female">زنان</div>
+            </div>
+            <div id="sharpeChart"></div>
+        </div>
+
+        <div class="chart-card">
+            <h4>🎭 توزیع تیپ شخصیتی</h4>
+            <div class="gender-tab" id="personalityTabs">
+                <div class="gender-btn-tab active" data-gender="all">همه</div>
+                <div class="gender-btn-tab" data-gender="male">مردان</div>
+                <div class="gender-btn-tab" data-gender="female">زنان</div>
+            </div>
+            <div id="personalityChart"></div>
+        </div>
+        
+        <!-- بخش اطلاعات هر نفر برای خروجی اکسل -->
+        <div class="chart-card" style="overflow-x: auto;">
+            <h4>📋 لیست کامل کاربران (قابل کپی برای اکسل)</h4>
+            <table style="width:100%; font-size:12px;" id="exportTable">
+                <thead>
+                    <tr><th>نام</th><th>سن</th><th>جنسیت</th><th>سناریو</th><th>ریسک</th><th>دانش</th><th>تمرکز%</th><th>سود%</th><th>نسبت شارپ</th><th>تیپ شخصیتی</th></tr>
+                </thead>
+                <tbody id="exportTableBody"></tbody>
+            </table>
+            <button id="copyTableBtn" class="btn btn-primary" style="margin-top:15px;">📋 کپی جدول برای اکسل</button>
+        </div>
+        
+        <div style="overflow-x: auto; margin-top: 20px;">
+            <table id="dataTable">
+                <thead>
+                    <tr><th>ردیف</th><th>نام</th><th>سن</th><th>جنسیت</th><th>سناریو</th><th>ریسک</th><th>دانش</th><th>تمرکز%</th><th>سود%</th><th>نسبت شارپ</th><th>تیپ شخصیتی</th><th>عملیات</th></tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
+        
+        <div class="pagination" id="pagination"></div>
+    </div>
+</div>
+
+<script>
+    // ==================== متغیرهای بازی ====================
+    let selectedGender = null;
+    let selectedAge = null;
+    let userInfo = {};
+    let selectedScenario = null;
+    
+    let initialCapital = 1000;
+    let allocation = {
+        bank: 0,
+        gold: 0,
+        dollar: 0,
+        stock: 0,
+        crypto: 0
+    };
+
+    let assets = [
+        { id: "bank", name: "🏦 بانک / صندوق درآمد ثابت", icon: "🏦", short: "صندوق درآمد ثابت/ بانک" },
+        { id: "gold", name: "🥇 طلا", icon: "🥇", short: "طلا" },
+        { id: "dollar", name: "💵 دلار / تتر", icon: "💵", short: "دلار/تتر" },
+        { id: "stock", name: "📊 بورس ایران (سهام)", icon: "📊", short: "بورس ایران(سهام)" },
+        { id: "crypto", name: "₿ ارزهای دیجیتال", icon: "₿", short: "ارز دیجیتال(بیتکوین، اتریوم و...)" }
+    ];
+
+    let riskIndex = 0;
+    let riskChoices = [];
+    let riskResults = [];
+    let riskQuestions = [
+        { text: "سرمایه اولیه خود را چگونه مدیریت می‌کنی؟", safeProfit: 2, riskyChance: 30, riskyProfit: 7 },
+        { text: "بازار سهام در حال نوسان است. چه می‌کنی؟", safeProfit: 4, riskyChance: 25, riskyProfit: 12 },
+        { text: "یک ارز دیجیتال جدید 300% رشد کرده. چه می‌کنی？", safeProfit: 6, riskyChance: 20, riskyProfit: 18 },
+        { text: "بازار 20% ریزش داشته. واکنش تو چیست؟", safeProfit: 8, riskyChance: 15, riskyProfit: 25 }
+    ];
+
+    let quizIndex = 0;
+    let quizAnswers = [];
+    let totalQuizScore = 0;
+    let maxQuizScore = 50;
+    let quizQuestions = [
+        { section: 1, sectionName: "📚 دانش مالی پایه", text: "شما ۱۰۰ واحد در حساب پس‌انداز با سود ۲٪ در سال دارید. بعد از ۵ سال چقدر دارید؟", options: ["بیشتر از ۱۱۰ واحد", "دقیقاً ۱۱۰ واحد", "کمتر از ۱۱۰ واحد"], scores: [4, 2, 1] },
+        { section: 1, sectionName: "📚 دانش مالی پایه", text: "سود بانکی شما ۱٪ و تورم ۲٪ است. بعد از یک سال قدرت خرید شما چقدر می‌شود؟", options: ["بیشتر از امروز", "به اندازه امروز", "کمتر از امروز"], scores: [1, 2, 4] },
+        { section: 1, sectionName: "📚 دانش مالی پایه", text: "خرید سهام یک شرکت امن‌تر از خرید صندوق سرمایه‌گذاری مشترک است.", options: ["درست", "غلط"], scores: [1, 4] },
+        { section: 1, sectionName: "📚 دانش مالی پایه", text: "کدام سرمایه‌گذاری معمولاً بیشترین نوسان قیمت را دارد؟", options: ["حساب پس‌انداز", "اوراق قرضه با سود ثابت", "سهام"], scores: [1, 2, 4] },
+        { section: 1, sectionName: "📚 دانش مالی پایه", text: "وظیفه اصلی بازار سهام چیست؟", options: ["پیش‌بینی سود سهام", "افزایش قیمت سهام", "جمع کردن خریداران و فروشندگان", "هیچکدام"], scores: [1, 1, 4, 1] },
+        { section: 2, sectionName: "📊 نگرش مالی", text: "برای من رضایت‌بخش‌تر است که پول را خرج کنم تا اینکه برای بلندمدت سرمایه‌گذاری کنم.", options: ["کاملاً موافقم", "موافقم", "نظری ندارم", "مخالفم", "کاملاً مخالفم"], scores: [1, 2, 3, 4, 5] },
+        { section: 2, sectionName: "📊 نگرش مالی", text: "تمایل دارم امروز را زندگی کنم و بگذارم فردا خودش خودش را اداره کند.", options: ["کاملاً موافقم", "موافقم", "نظری ندارم", "مخالفم", "کاملاً مخالفم"], scores: [1, 2, 3, 4, 5] },
+        { section: 3, sectionName: "🎯 رفتار مالی", text: "من به دقت بر امور مالی خود نظارت دارم.", options: ["کاملاً موافقم", "موافقم", "نظری ندارم", "مخالفم", "کاملاً مخالفم"], scores: [5, 4, 3, 2, 1] },
+        { section: 3, sectionName: "🎯 رفتار مالی", text: "قبل از خرید چیزی، به دقت بررسی می‌کنم که آیا از پس هزینه‌اش برمی‌آیم یا نه.", options: ["همیشه", "گاهی", "هرگز"], scores: [4, 2, 1] },
+        { section: 4, sectionName: "💻 سواد مالی دیجیتال", text: "قبل از سرمایه‌گذاری آنلاین در بازارهای مالی بین‌المللی، آیا ارائه‌دهنده خدمات سرمایه‌گذاری در این زمینه در کشور تحت نظارت بانک مرکزی است یا نه؟", options: ["همیشه", "گاهی", "هرگز", "من در بازار بین‌المللی سرمایه‌گذاری نمی‌کنم"], scores: [4, 2, 1, 3] },
+        { section: 5, sectionName: "🧠 نگرش به ریسک و آینده", text: "من آماده هستم که بخشی از پول خود را هنگام پس‌انداز یا سرمایه‌گذاری ریسک کنم.", options: ["کاملاً موافقم", "موافقم", "نظری ندارم", "مخالفم", "کاملاً مخالفم"], scores: [5, 4, 3, 2, 1] },
+        { section: 5, sectionName: "🧠 نگرش به ریسک و آینده", text: "من به ارائه‌دهندگان خدمات مالی اعتماد دارم و می‌دانم که با من منصفانه رفتار می‌کنند.", options: ["کاملاً موافقم", "موافقم", "نظری ندارم", "مخالفم", "کاملاً مخالفم"], scores: [5, 4, 3, 2, 1] },
+        { section: 5, sectionName: "🧠 نگرش به ریسک و آینده", text: "من اهداف مالی بلندمدت تعیین می‌کنم و برای رسیدن به آنها تلاش می‌کنم.", options: ["کاملاً موافقم", "موافقم", "نظری ندارم", "مخالفم", "کاملاً مخالفم"], scores: [5, 4, 3, 2, 1] },
+        { section: 5, sectionName: "🧠 نگرش به ریسک و آینده", text: "به دانش خودتان درباره مسائل مالی خودتان از یک تا پنج چند می‌دهید？", options: ["۱", "۲", "۳", "۴", "۵"], scores: [1, 2, 3, 4, 5] }
+    ];
+
+    let crashIndex = 0;
+    let crashAssetsList = [
+        { id: "gold", name: "🥇 طلا", key: "gold", emoji: "🥇" },
+        { id: "stock", name: "📊 بورس ایران (سهام)", key: "stock", emoji: "📊" },
+        { id: "dollar", name: "💵 دلار / تتر", key: "dollar", emoji: "💵" },
+        { id: "crypto", name: "₿ ارزهای دیجیتال", key: "crypto", emoji: "₿" }
+    ];
+    
+    let assetsStage4 = [
+        { id: "bank", name: "🏦 بانک / صندوق درآمد ثابت", icon: "🏦", short: "بانک / صندوق درآمد ثابت" },
+        { id: "gold", name: "🥇 طلا", icon: "🥇", short: "طلا" },
+        { id: "dollar", name: "💵 دلار / تتر", icon: "💵", short: "دلار / تتر" },
+        { id: "stock", name: "📊 بورس ایران (سهام)", icon: "📊", short: "بورس ایران (سهام)" },
+        { id: "crypto", name: "₿ ارزهای دیجیتال", icon: "₿", short: "ارزهای دیجیتال" }
+    ];
+    
+    let totalCapitalRisk = 1000;
+    let guideShownStage4 = false;
+    let riskGuideShown = false;
+    let quizGuideShown = false;
+    let resultGuideShown = false;
+    let finalPersonality = {};
+    let userReactions = [];
+    let buyActionWaiting = false;
+
+    function calculateSharpeRatio(profitPercent, riskScore) {
+        let riskFreeRate = 5;
+        let excessReturn = profitPercent - riskFreeRate;
+        let riskVolatility = 5 + (riskScore * 5);
+        if(riskVolatility === 0) return 0;
+        let sharpe = excessReturn / riskVolatility;
+        return Math.max(-2, Math.min(3, sharpe)).toFixed(2);
+    }
+
+    function showGuide(stepNumber, guideText) {
+        let oldGuide = document.querySelector('.guide-overlay');
+        if (oldGuide) oldGuide.remove();
+        
+        let guideDiv = document.createElement('div');
+        guideDiv.className = 'guide-overlay';
+        guideDiv.innerHTML = `
+            <div class="guide-card">
+                <h3>📖 راهنما</h3>
+                <p>${guideText}</p>
+                <button id="closeGuideBtn">باشه، فهمیدم ✨</button>
+            </div>
+        `;
+        document.body.appendChild(guideDiv);
+        
+        document.getElementById('closeGuideBtn').onclick = () => {
+            guideDiv.remove();
+        };
+    }
+
+    function showFunToast(emoji, mainMessage, subMessage) {
+        let oldToast = document.querySelector('.fun-toast');
+        if (oldToast) oldToast.remove();
+        
+        let toast = document.createElement('div');
+        toast.className = 'fun-toast';
+        toast.innerHTML = `
+            <div class="emoji">${emoji}</div>
+            <div class="message">${mainMessage}</div>
+            <div class="sub-message">${subMessage}</div>
+        `;
+        document.body.appendChild(toast);
+        
+        setTimeout(() => {
+            toast.remove();
+        }, 2000);
+    }
+
+    function saveUserToAdminPanel(userData) {
+        let existingUsers = localStorage.getItem('financialGameUsers');
+        let users = existingUsers ? JSON.parse(existingUsers) : [];
+        
+        let maxAllocation = Math.max(
+            userData.allocation?.bank || 0,
+            userData.allocation?.gold || 0,
+            userData.allocation?.dollar || 0,
+            userData.allocation?.stock || 0,
+            userData.allocation?.crypto || 0
+        );
+        let concentrationIndex = ((maxAllocation / 1000) * 100).toFixed(1);
+        
+        let newUser = {
+            name: userData.name || "کاربر",
+            age: userData.age || "۲۶-۳۵",
+            gender: userData.gender === "male" ? "مرد" : "زن",
+            scenario: userData.scenario || "tech",
+            riskScore: userData.riskScore || 2,
+            quizScore: userData.quizScore || 25,
+            concentrationIndex: concentrationIndex,
+            profitPercent: userData.finalProfitPercent || 0,
+            sharpeRatio: calculateSharpeRatio(userData.finalProfitPercent || 0, userData.riskScore || 2),
+            personality: userData.personality || "روباه زرنگ",
+            allocation: userData.allocation || { bank: 250, gold: 250, dollar: 250, stock: 150, crypto: 100 },
+            reactions: userData.reactions || []
+        };
+        
+        users.push(newUser);
+        localStorage.setItem('financialGameUsers', JSON.stringify(users));
+        console.log("✅ اطلاعات کاربر در پنل ادمین ذخیره شد:", newUser.name);
+        
+        showFunToast("✅🎮", "اطلاعات شما ذخیره شد!", "حالا می‌تونی توی پنل ادمین ببینی");
+    }
+
+    function saveGameResultToAdmin() {
+        let finalTotalCapital = initialCapital;
+        for(let key in allocation) {
+            finalTotalCapital += allocation[key];
+        }
+        finalTotalCapital = finalTotalCapital + (userInfo.riskProfit || 0);
+        let finalProfitPercent = ((finalTotalCapital - initialCapital) / initialCapital) * 100;
+        
+        let riskScore = 0;
+        for(let i=0; i<riskChoices.length; i++) {
+            if(riskChoices[i] === 'B') riskScore++;
+        }
+        
+        let totalScore = (riskScore * 25) + ((userInfo.quizScore || 0) / 2);
+        let personality = "روباه زرنگ";
+        if(totalScore >= 70) personality = "ببر طوفان";
+        else if(totalScore >= 50) personality = "روباه زرنگ";
+        else if(totalScore >= 30) personality = "پنگوئن دانا";
+        else personality = "لاک‌پشت خونه به دوش";
+        
+        let finalUserData = {
+            name: userInfo.name,
+            gender: userInfo.gender,
+            age: userInfo.age,
+            scenario: userInfo.scenario,
+            riskScore: riskScore,
+            quizScore: userInfo.quizScore || 0,
+            finalProfitPercent: finalProfitPercent,
+            allocation: allocation,
+            personality: personality,
+            reactions: userReactions
+        };
+        
+        saveUserToAdminPanel(finalUserData);
+        
+        // ارسال به Google Sheets
+        fetch('https://script.google.com/macros/s/AKfycbwHhJJDVS24q9Gv2_-JRclXeXOuV_z5cuSI43iyRlGL_dIapfeAdxoXhElEEg6aNw7c/exec', {
+            method: 'POST',
+            mode: 'no-cors',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                name: finalUserData.name,
+                age: finalUserData.age,
+                gender: finalUserData.gender,
+                scenario: finalUserData.scenario,
+                riskScore: finalUserData.riskScore,
+                quizScore: finalUserData.quizScore,
+                profitPercent: finalUserData.finalProfitPercent.toFixed(2),
+                personality: finalUserData.personality
+            })
+        }).catch(err => console.log('ارسال به شیت خطا:', err));
+    }
+
+    document.querySelectorAll('.gender-btn').forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll('.gender-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            selectedGender = btn.dataset.gender;
+        };
+    });
+
+    document.querySelectorAll('.age-btn').forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll('.age-btn').forEach(b => b.classList.remove('selected'));
+            btn.classList.add('selected');
+            selectedAge = btn.dataset.age;
+        };
+    });
+
+    function renderStage2() {
+        let html = `
+            <h2 style="color:#fbbf24; margin-bottom:20px;">📖 انتخاب سناریو</h2>
+            <p style="margin-bottom:20px; color:#94a3b8;">یک سناریوی اقتصادی را انتخاب کن. بر اساس این سناریو، در مراحل بعد باید سرمایه‌ات را بین دارایی‌های مختلف تقسیم کنی و تصمیم‌های سرمایه‌گذاری بگیری.</p>
+            <div class="scenario-row">
+                <div class="selection-btn scenario-btn" data-scenario="war">
+                    <div style="font-size:2rem; margin-bottom:10px;">🔥</div>
+                    <div style="font-size:1.3rem; font-weight:bold; margin-bottom:10px;">سناریوی جنگی</div>
+                    <div style="font-size:0.85rem; color:#94a3b8; margin-bottom:10px;">تنش‌های سیاسی | تحریم‌ها | ناامنی منطقه</div>
+                    <div style="font-size:0.9rem; margin-top:10px; padding-top:10px; border-top:1px solid #334155;">📌 بازارهای مالی ریزش کرده‌اند. سرمایه‌گذاران به سمت دارایی‌های امن مانند طلا، دلار و رمزارزهای مقاوم مثل بیت‌کوین پناه می‌برند.</div>
+                </div>
+                <div class="selection-btn scenario-btn" data-scenario="recession">
+                    <div style="font-size:2rem; margin-bottom:10px;">📉</div>
+                    <div style="font-size:1.3rem; font-weight:bold; margin-bottom:10px;">سناریوی رکود</div>
+                    <div style="font-size:0.85rem; color:#94a3b8; margin-bottom:10px;">تورم بالا | نرخ بهره زیاد | کاهش قدرت خرید</div>
+                    <div style="font-size:0.9rem; margin-top:10px; padding-top:10px; border-top:1px solid #334155;">📌 کسب‌وکارها ورشکست می‌شوند. صندوق‌های درآمد ثابت و دلار امن‌تر هستند. پروژه‌های بزرگ مثل اتریوم مقاومت بیشتری دارند.</div>
+                </div>
+                <div class="selection-btn scenario-btn" data-scenario="tech">
+                    <div style="font-size:2rem; margin-bottom:10px;">🚀</div>
+                    <div style="font-size:1.3rem; font-weight:bold; margin-bottom:10px;">سناریوی رونق فناوری</div>
+                    <div style="font-size:0.85rem; color:#94a3b8; margin-bottom:10px;">نوآوری بلاکچین | پذیرش گسترده | اخبار مثبت</div>
+                    <div style="font-size:0.9rem; margin-top:10px; padding-top:10px; border-top:1px solid #334155;">📌 قیمت رمزارزها در حال صعود است، فرصت سود بالا وجود دارد، اما ریسک حباب نیز وجود دارد.</div>
+                </div>
+            </div>
+            <button id="nextToStage3" class="btn btn-primary" style="margin-top:25px; width:100%; padding:14px; font-size:1.1rem;" disabled>▶ مرحله بعد (تخصیص دارایی)</button>
+        `;
+        
+        document.getElementById('stageContainer').innerHTML = html;
+        
+        let nextBtn = document.getElementById('nextToStage3');
+        
+        document.querySelectorAll('.scenario-btn').forEach(btn => {
+            btn.onclick = () => {
+                document.querySelectorAll('.scenario-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedScenario = btn.dataset.scenario;
+                nextBtn.disabled = false;
+            };
+        });
+        
+        nextBtn.onclick = () => {
+            if (!selectedScenario) { alert("لطفاً یک سناریو انتخاب کن"); return; }
+            userInfo.scenario = selectedScenario;
+            renderStage3();
+        };
+        
+        showGuide(2, "در این مرحله باید یکی از سه سناریوی اقتصادی موجود را با توجه به توضیحات هر کدام انتخاب کنید. سناریوی انتخابی شما تعیین می‌کند که در مراحل بعدی سرمایه خود را چگونه بین دارایی‌های مختلف تقسیم کنید و چه تصمیم‌های سرمایه‌گذاری بگیرید.");
+    }
+
+    function renderStage3() {
+        document.getElementById('topBar').style.display = 'none';
+        document.getElementById('adminBtnContainer').style.display = 'none';
+        document.body.style.padding = '0';
+        
+        let stepCircles = document.querySelectorAll('.step-circle');
+        if(stepCircles.length > 0) {
+            for(let i=0; i<stepCircles.length; i++) {
+                stepCircles[i].classList.remove('active', 'completed');
+            }
+            if(stepCircles[0]) stepCircles[0].classList.add('active');
+        }
+        
+        let scenarioText = "";
+        let scenarioName = "";
+        if (selectedScenario === "war") {
+            scenarioText = "جنگی - تنش‌های سیاسی، بازار آشفته، پناهندگی به دارایی‌های امن";
+            scenarioName = "جنگی";
+        }
+        else if (selectedScenario === "recession") {
+            scenarioText = "رکود - تورم بالا، نرخ بهره زیاد، کاهش قدرت خرید";
+            scenarioName = "رکود";
+        }
+        else {
+            scenarioText = "رونق فناوری - نوآوری بلاکچین، پذیرش گسترده، فرصت سود بالا";
+            scenarioName = "رونق فناوری";
+        }
+        
+        let html = `
+            <div class="fullscreen-stage3">
+                <div class="info-line">
+                    <div>👤 نام: <span id="userNameDisplay">${userInfo.name}</span></div>
+                    <div>📅 سن: <span id="userAgeDisplay">${userInfo.age}</span></div>
+                </div>
+                <div class="info-line">
+                    <div>📖 سناریو: <span id="scenarioText">${scenarioText}</span></div>
+                </div>
+                <div class="info-line">
+                    <div>💰 سرمایه فعلی: <span class="capital-large" id="currentCapital">0</span></div>
+                    <div>📊 تغییر: <span id="percentChange">0%</span></div>
+                </div>
+                <div class="info-line">
+                    <div>💰 سرمایه اولیه: 1,000</div>
+                    <div>💰 باقیمانده: <strong id="remainingCap">1000</strong></div>
+                </div>
+                <div class="asset-stats" id="assetStatsBar"></div>
+                <div class="steps-container">
+                    <div class="step-item"><div class="step-circle" id="step1">1</div><div class="step-label">تخصیص</div></div>
+                    <div class="step-line"></div>
+                    <div class="step-item"><div class="step-circle" id="step2">2</div><div class="step-label">واکنش</div></div>
+                    <div class="step-line"></div>
+                    <div class="step-item"><div class="step-circle" id="step3">3</div><div class="step-label">ریسک</div></div>
+                    <div class="step-line"></div>
+                    <div class="step-item"><div class="step-circle" id="step4">4</div><div class="step-label">دانش</div></div>
+                    <div class="step-line"></div>
+                    <div class="step-item"><div class="step-circle" id="step5">5</div><div class="step-label">نتیجه</div></div>
+                </div>
+                <h3 style="color:#fbbf24; margin:20px 0 15px 0;">📌 تخصیص سرمایه (۱۰۰۰ واحد)</h3>
+                <p style="margin-bottom:15px; color:#94a3b8;">با دکمه‌های + و - هر بار ۵۰ واحد کم یا زیاد کن</p>
+                <div id="assetsList"></div>
+                <div id="warnMsg" style="margin:10px 0; color:#fbbf24; text-align:center;"></div>
+                <button id="saveAllocation" class="btn btn-primary">✔️ ذخیره و ادامه</button>
+            </div>
+        `;
+        
+        document.getElementById('stageContainer').innerHTML = html;
+        document.getElementById('stageContainer').style.maxWidth = '100%';
+        document.getElementById('stageContainer').style.margin = '0';
+        document.getElementById('stageContainer').style.padding = '0';
+        
+        let step1 = document.getElementById('step1');
+        if(step1) step1.classList.add('active');
+        
+        allocation = { bank: 0, gold: 0, dollar: 0, stock: 0, crypto: 0 };
+        
+        function updateUI() {
+            let total = allocation.bank + allocation.gold + allocation.dollar + allocation.stock + allocation.crypto;
+            let remaining = initialCapital - total;
+            let percent = ((total - initialCapital) / initialCapital) * 100;
+            
+            document.getElementById('currentCapital').innerHTML = Math.floor(total);
+            document.getElementById('percentChange').innerHTML = `${percent >= 0 ? '+' : ''}${percent.toFixed(2)}%`;
+            document.getElementById('remainingCap').innerHTML = remaining;
+            document.getElementById('warnMsg').innerHTML = total !== initialCapital ? 
+                `⚠️ مجموع باید ${initialCapital} باشه! باقیمانده: ${remaining}` : 
+                '✅ آفرین، همه پول تقسیم شد.';
+            
+            let statsHtml = assets.map(a => {
+                let val = allocation[a.id];
+                let pct = (val / initialCapital * 100).toFixed(1);
+                return `<div class="asset-stat-badge">${a.icon} ${a.short}: ${val} (${pct}%)</div>`;
+            }).join('');
+            document.getElementById('assetStatsBar').innerHTML = statsHtml;
+            
+            assets.forEach(a => {
+                let span = document.getElementById(`val_${a.id}`);
+                if (span) span.innerText = allocation[a.id];
+            });
+        }
+        
+        let assetsHtml = '';
+        assets.forEach(a => {
+            assetsHtml += `
+                <div class="asset-row">
+                    <div>${a.icon} ${a.name}</div>
+                    <div class="asset-controls">
+                        <button class="decBtn" data-id="${a.id}">-</button>
+                        <span class="asset-value" id="val_${a.id}">0</span>
+                        <button class="incBtn" data-id="${a.id}">+</button>
+                    </div>
+                </div>
+            `;
+        });
+        document.getElementById('assetsList').innerHTML = assetsHtml;
+        
+        document.querySelectorAll('.incBtn').forEach(btn => {
+            btn.onclick = () => {
+                let id = btn.dataset.id;
+                let total = allocation.bank + allocation.gold + allocation.dollar + allocation.stock + allocation.crypto;
+                let remaining = initialCapital - total;
+                if (remaining >= 50) allocation[id] += 50;
+                else if (remaining > 0) allocation[id] += remaining;
+                updateUI();
+            };
+        });
+        
+        document.querySelectorAll('.decBtn').forEach(btn => {
+            btn.onclick = () => {
+                let id = btn.dataset.id;
+                if (allocation[id] >= 50) allocation[id] -= 50;
+                else allocation[id] = 0;
+                updateUI();
+            };
+        });
+        
+        document.getElementById('saveAllocation').onclick = () => {
+            let total = allocation.bank + allocation.gold + allocation.dollar + allocation.stock + allocation.crypto;
+            if (total !== initialCapital) {
+                alert(`مجموع تخصیص باید برابر ${initialCapital} باشد.`);
+                return;
+            }
+            userInfo.allocation = allocation;
+            renderStage4();
+        };
+        
+        updateUI();
+        showGuide(3, "در این مرحله، ۱۰۰۰ واحد سرمایه خود را بین ۵ دارایی زیر تخصیص بده. بر حسب سناریویی که در مرحله قبل انتخاب کردی («" + scenarioName + "») دارایی‌ها رو تخصیص بده. اگر یادت نیست، بالای صفحه نوشته شده کدوم سناریو رو انتخاب کردی.\n\nبا دکمه‌های + و - هر بار ۵۰ واحد کم یا زیاد کن. مجموع تخصیص باید دقیقاً ۱۰۰۰ باشد.");
+    }
+
+    function showGuideStage4() {
+        let guideDiv = document.createElement('div');
+        guideDiv.className = 'guide-overlay';
+        guideDiv.innerHTML = `
+            <div class="guide-card">
+                <h3>📖 راهنما</h3>
+                <p>🎯 هر دارایی 25% تغییر می‌کند.<br><br>
+                🟡 فروش همه → مقدار دارایی صفر می‌شود و پول آن به بانک اضافه می‌شود<br>
+                🟢 خرید بیشتر → ±10% به دارایی<br>
+                🔵 صبر → ±15% به دارایی<br>
+                🟣 تغییر استراتژی → ±20% به دارایی<br><br>
+                💡 تغییرات تصادفی مثبت یا منفی</p>
+                <button id="closeGuideBtn">شروع 🚀</button>
+            </div>
+        `;
+        document.body.appendChild(guideDiv);
+        document.getElementById('closeGuideBtn').onclick = () => {
+            guideDiv.remove();
+        };
+    }
+    
+    function updateFixedInfoStage4() {
+        let total = allocation.bank + allocation.gold + allocation.dollar + allocation.stock + allocation.crypto;
+        let percent = ((total - initialCapital) / initialCapital) * 100;
+        
+        document.getElementById('currentCapital').innerHTML = Math.floor(total);
+        document.getElementById('percentChange').innerHTML = `${percent >= 0 ? '+' : ''}${percent.toFixed(2)}%`;
+        
+        let statsHtml = assetsStage4.map(a => {
+            let val = allocation[a.id];
+            let pct = (val / initialCapital * 100).toFixed(1);
+            return `<div class="asset-stat-badge">${a.icon} ${a.short}: ${val} (${pct}%)</div>`;
+        }).join('');
+        document.getElementById('assetStatsBar').innerHTML = statsHtml;
+        
+        document.getElementById('userNameDisplay').innerHTML = userInfo.name;
+        document.getElementById('userAgeDisplay').innerHTML = userInfo.age;
+        
+        let scenarioText = "";
+        if (selectedScenario === "war") scenarioText = "جنگی - تنش‌های سیاسی، بازار آشفته، پناهندگی به دارایی‌های امن";
+        else if (selectedScenario === "recession") scenarioText = "رکود - تورم بالا، نرخ بهره زیاد، کاهش قدرت خرید";
+        else scenarioText = "رونق فناوری - نوآوری بلاکچین، پذیرش گسترده، فرصت سود بالا";
+        document.getElementById('scenarioDisplay').innerHTML = scenarioText;
+    }
+    
+    function renderReaction() {
+        if (crashIndex >= crashAssetsList.length) {
+            riskIndex = 0;
+            riskChoices = [];
+            riskResults = [];
+            renderRiskStage();
+            return;
+        }
+        
+        let currentAsset = crashAssetsList[crashIndex];
+        let currentValue = allocation[currentAsset.key];
+        
+        let isRise = crashIndex >= 2;
+        let changeText = isRise ? "رشد قیمت داشته است" : "ریزش قیمت داشته است";
+        let changeColor = isRise ? "#22c55e" : "#ef4444";
+        let type = isRise ? "growth" : "crash";
+        
+        let html = `
+            <div class="info-box">
+                <div style="font-size:1.5rem; margin-bottom:5px;">📊 سوال ${crashIndex+1} از ${crashAssetsList.length}</div>
+                <div style="font-size:1.8rem;">${currentAsset.emoji}</div>
+                <div style="font-size:1.3rem; font-weight:bold;">${currentAsset.name}</div>
+                <div style="color:${changeColor};">${currentAsset.name}: 25% ${changeText}</div>
+                <div style="margin-top:10px;">💰 مقدار فعلی: <strong style="color:#fbbf24;">${currentValue}</strong> واحد</div>
+            </div>
+            <div class="options-grid">
+                <div class="reaction-option" data-action="sell">
+                    🟡 فروش همه دارایی فعلی<br>
+                    <span style="font-size:11px;"></span>
+                </div>
+                <div class="reaction-option" data-action="buy">
+                    🟢 خرید بیشتر دارایی فعلی<br>
+                    <span style="font-size:11px;">با انتخاب این گزینه ممکن است 10 درصد به دارایی فعلی اضافه یا کم شود</span>
+                </div>
+                <div class="reaction-option" data-action="wait">
+                    🔵 هیچ کاری (صبر)<br>
+                    <span style="font-size:11px;">با انتخاب این گزینه ممکن است 15 درصد به دارایی فعلی اضافه یا کم شود</span>
+                </div>
+                <div class="reaction-option" data-action="change">
+                    🟣 تغییر استراتژی به دارایی دیگر<br>
+                    <span style="font-size:11px;">با انتخاب این گزینه ممکن است 20 درصد به دارایی فعلی اضافه یا کم شود</span>
+                </div>
+            </div>
+            <div id="reactionHint" style="margin-top:15px; padding:12px; background:rgba(0,0,0,0.3); border-radius:16px; font-size:13px; text-align:center;">
+                💡 با انتخاب هر گزینه، مقدار ${currentAsset.name} تغییر می‌کند.
+            </div>
+        `;
+        
+        document.getElementById('stageContainerInner').innerHTML = html;
+        
+        document.querySelectorAll('.reaction-option').forEach(opt => {
+            opt.onclick = () => {
+                let action = opt.dataset.action;
+                let oldValue = allocation[currentAsset.key];
+                let newValue = oldValue;
+                let changePercent = 0;
+                let message = "";
+                let emoji = "";
+                let mainMessage = "";
+                
+                userReactions.push({
+                    asset: currentAsset.name,
+                    action: action,
+                    type: type,
+                    oldValue: oldValue
+                });
+                
+                if (action === "sell") {
+                    let soldAmount = oldValue;
+                    newValue = 0;
+                    emoji = "😢💰";
+                    mainMessage = "همه رو فروختی!";
+                    message = `💰 شما تمام ${currentAsset.name} را فروختید. مقدار این دارایی از ${oldValue} به 0 رسید و پول آن به بانک اضافه شد.`;
+                    showFunToast(emoji, mainMessage, `${currentAsset.name} از ${oldValue} به 0 رسید`);
+                    
+                    allocation[currentAsset.key] = newValue;
+                    allocation.bank += soldAmount;
+                    updateFixedInfoStage4();
+                    
+                    let hintBox = document.getElementById('reactionHint');
+                    if (hintBox) {
+                        hintBox.innerHTML = `💡 ${message}<br><br>✅ در حال رفتن به سوال بعدی...`;
+                    }
+                    
+                    document.querySelectorAll('.reaction-option').forEach(btn => {
+                        btn.style.opacity = '0.5';
+                        btn.style.pointerEvents = 'none';
+                    });
+                    
+                    setTimeout(() => {
+                        crashIndex++;
+                        renderReaction();
+                    }, 800);
+                    return;
+                }
+                else if (action === "buy") {
+                    // بررسی موجودی بانک
+                    if (allocation.bank <= 0) {
+                        showFunToast("⚠️💰", "پول کافی در بانک نداری!", "گزینه دیگه‌ای انتخاب کن");
+                        return; // بدون رفتن به سوال بعدی، همینجا می‌مونه
+                    }
+                    
+                    // مقدار برداشت از بانک (حداکثر 100 واحد یا کل موجودی اگر کمتر باشه)
+                    let withdrawAmount = Math.min(100, allocation.bank);
+                    allocation.bank -= withdrawAmount;
+                    
+                    // عدد رندوم بین 90 تا 110
+                    let randomPercent = Math.floor(Math.random() * 21) + 90;
+                    let addedAmount = Math.floor(withdrawAmount * randomPercent / 100);
+                    
+                    allocation[currentAsset.key] += addedAmount;
+                    
+                    let isPositive = addedAmount >= withdrawAmount;
+                    changePercent = ((addedAmount - withdrawAmount) / withdrawAmount * 100).toFixed(0);
+                    
+                    if (isPositive) {
+                        emoji = "🎉💰";
+                        mainMessage = `${Math.abs(changePercent)}% سود کردی!`;
+                        message = `💰 از بانک ${withdrawAmount} واحد برداشت شد. ${addedAmount} واحد به ${currentAsset.name} اضافه شد (${changePercent}% سود)`;
+                    } else {
+                        emoji = "😅📉";
+                        mainMessage = `${Math.abs(changePercent)}% ضرر کردی...`;
+                        message = `💰 از بانک ${withdrawAmount} واحد برداشت شد. ${addedAmount} واحد به ${currentAsset.name} اضافه شد (${changePercent}% ضرر)`;
+                    }
+                    
+                    showFunToast(emoji, mainMessage, `${currentAsset.name}: +${addedAmount} واحد`);
+                    
+                    updateFixedInfoStage4();
+                    
+                    let hintBox = document.getElementById('reactionHint');
+                    if (hintBox) {
+                        hintBox.innerHTML = `💡 ${message}<br><br>✅ در حال رفتن به سوال بعدی...`;
+                    }
+                    
+                    document.querySelectorAll('.reaction-option').forEach(btn => {
+                        btn.style.opacity = '0.5';
+                        btn.style.pointerEvents = 'none';
+                    });
+                    
+                    setTimeout(() => {
+                        crashIndex++;
+                        renderReaction();
+                    }, 800);
+                    return;
+                }
+                else if (action === "wait") {
+                    let isPositive = Math.random() < 0.5;
+                    changePercent = isPositive ? 15 : -15;
+                    newValue = Math.floor(oldValue + (oldValue * changePercent / 100));
+                    if (newValue < 0) newValue = 0;
+                    
+                    if (isPositive) {
+                        emoji = "🍀✨";
+                        mainMessage = `${changePercent}% سود کردی! صبرت نتیجه داد!`;
+                    } else {
+                        emoji = "🐢💔";
+                        mainMessage = `${Math.abs(changePercent)}% ضرر کردی... صبر گاهی تلخه!`;
+                    }
+                    showFunToast(emoji, mainMessage, `${currentAsset.name}: از ${oldValue} به ${newValue}`);
+                    
+                    message = `⏳ مقدار ${currentAsset.name} ${changePercent >= 0 ? '+' : ''}${changePercent}% تغییر کرد. (از ${oldValue} به ${newValue})<br>
+                    <span style="font-size:11px;">🔹 با انتخاب این گزینه ممکن است 15 درصد به دارایی فعلی اضافه یا کم شود.</span>`;
+                    
+                    allocation[currentAsset.key] = newValue;
+                    updateFixedInfoStage4();
+                    
+                    let hintBox = document.getElementById('reactionHint');
+                    if (hintBox) {
+                        hintBox.innerHTML = `💡 ${message}<br><br>✅ در حال رفتن به سوال بعدی...`;
+                    }
+                    
+                    document.querySelectorAll('.reaction-option').forEach(btn => {
+                        btn.style.opacity = '0.5';
+                        btn.style.pointerEvents = 'none';
+                    });
+                    
+                    setTimeout(() => {
+                        crashIndex++;
+                        renderReaction();
+                    }, 800);
+                    return;
+                }
+                else if (action === "change") {
+                    let isPositive = Math.random() < 0.5;
+                    changePercent = isPositive ? 20 : -20;
+                    newValue = Math.floor(oldValue + (oldValue * changePercent / 100));
+                    if (newValue < 0) newValue = 0;
+                    
+                    if (isPositive) {
+                        emoji = "🦊💎";
+                        mainMessage = `${changePercent}% سود! استراتژی جدید جواب داد!`;
+                    } else {
+                        emoji = "🌀😵";
+                        mainMessage = `${Math.abs(changePercent)}% ضرر... شاید استراتژی بعدی بهتر باشه!`;
+                    }
+                    showFunToast(emoji, mainMessage, `${currentAsset.name}: از ${oldValue} به ${newValue}`);
+                    
+                    message = `🔄 مقدار ${currentAsset.name} ${changePercent >= 0 ? '+' : ''}${changePercent}% تغییر کرد. (از ${oldValue} به ${newValue})<br>
+                    <span style="font-size:11px;">🔹 با انتخاب این گزینه ممکن است 20 درصد به دارایی فعلی اضافه یا کم شود.</span>`;
+                    
+                    allocation[currentAsset.key] = newValue;
+                    updateFixedInfoStage4();
+                    
+                    let hintBox = document.getElementById('reactionHint');
+                    if (hintBox) {
+                        hintBox.innerHTML = `💡 ${message}<br><br>✅ در حال رفتن به سوال بعدی...`;
+                    }
+                    
+                    document.querySelectorAll('.reaction-option').forEach(btn => {
+                        btn.style.opacity = '0.5';
+                        btn.style.pointerEvents = 'none';
+                    });
+                    
+                    setTimeout(() => {
+                        crashIndex++;
+                        renderReaction();
+                    }, 800);
+                    return;
+                }
+            };
+        });
+    }
+    
+    function renderStage4() {
+        document.body.style.padding = '0';
+        
+        let stepCircles = document.querySelectorAll('.step-circle');
+        if(stepCircles.length > 0) {
+            for(let i=0; i<stepCircles.length; i++) {
+                stepCircles[i].classList.remove('active', 'completed');
+            }
+            if(stepCircles[0]) stepCircles[0].classList.add('completed');
+            if(stepCircles[1]) stepCircles[1].classList.add('active');
+        }
+        
+        let scenarioText = "";
+        if (selectedScenario === "war") scenarioText = "جنگی - تنش‌های سیاسی، بازار آشفته، پناهندگی به دارایی‌های امن";
+        else if (selectedScenario === "recession") scenarioText = "رکود - تورم بالا، نرخ بهره زیاد، کاهش قدرت خرید";
+        else scenarioText = "رونق فناوری - نوآوری بلاکچین، پذیرش گسترده، فرصت سود بالا";
+        
+        let html = `
+            <div id="fixedInfoBar">
+                <div class="info-line">
+                    <div>👤 نام: <span id="userNameDisplay">${userInfo.name}</span></div>
+                    <div>📅 سن: <span id="userAgeDisplay">${userInfo.age}</span></div>
+                    <div>📖 سناریو: <span id="scenarioDisplay">${scenarioText}</span></div>
+                </div>
+                <div class="info-line">
+                    <div>💰 سرمایه فعلی: <span class="capital-large" id="currentCapital">0</span></div>
+                    <div>📊 تغییر: <span id="percentChange">0%</span></div>
+                </div>
+                <div class="asset-stats" id="assetStatsBar"></div>
+            </div>
+            <div class="steps-container">
+                <div class="step-item"><div class="step-circle" id="step1">1</div><div class="step-label">تخصیص</div></div>
+                <div class="step-line" id="line1"></div>
+                <div class="step-item"><div class="step-circle" id="step2">2</div><div class="step-label">واکنش</div></div>
+                <div class="step-line" id="line2"></div>
+                <div class="step-item"><div class="step-circle" id="step3">3</div><div class="step-label">ریسک</div></div>
+                <div class="step-line" id="line3"></div>
+                <div class="step-item"><div class="step-circle" id="step4">4</div><div class="step-label">دانش</div></div>
+                <div class="step-line" id="line4"></div>
+                <div class="step-item"><div class="step-circle" id="step5">5</div><div class="step-label">نتیجه</div></div>
+            </div>
+            <div id="stageContainerInner"></div>
+        `;
+        
+        document.getElementById('stageContainer').innerHTML = html;
+        document.getElementById('stageContainer').style.maxWidth = '100%';
+        document.getElementById('stageContainer').style.margin = '0';
+        document.getElementById('stageContainer').style.padding = '0';
+        
+        crashIndex = 0;
+        userReactions = [];
+        
+        let step1 = document.getElementById('step1');
+        let step2 = document.getElementById('step2');
+        if(step1) step1.classList.add('completed');
+        if(step2) step2.classList.add('active');
+        
+        if (!guideShownStage4) {
+            showGuideStage4();
+            guideShownStage4 = true;
+        }
+        
+        updateFixedInfoStage4();
+        renderReaction();
+    }
+
+    function showRiskGuide() {
+        let guideDiv = document.createElement('div');
+        guideDiv.className = 'guide-overlay';
+        guideDiv.innerHTML = `
+            <div class="guide-card">
+                <h3>📖 راهنمای مرحله ریسک</h3>
+                <p>🎯 در این مرحله 4 سوال ریسک‌پذیری از شما پرسیده می‌شود.<br><br>
+                🛡️ گزینه امن (A): سود ماهانه مشخص و مطمئن دریافت می‌کنید.<br>
+                ⚡ گزینه ریسک‌پذیر (B): با درصد مشخصی شانس سود بالاتر دارید، در غیر این صورت سودی دریافت نمی‌کنید.<br><br>
+                💡 هر انتخاب روی سرمایه فعلی شما تأثیر می‌گذارد.<br>
+                📊 درصدهای سود در هر سوال متفاوت است.</p>
+                <button id="closeGuideBtn">شروع 🚀</button>
+            </div>
+        `;
+        document.body.appendChild(guideDiv);
+        document.getElementById('closeGuideBtn').onclick = function() {
+            guideDiv.remove();
+        };
+    }
+    
+    function updateFixedInfoRisk() {
+        let percent = ((totalCapitalRisk - initialCapital) / initialCapital) * 100;
+        
+        document.getElementById('currentCapital').innerHTML = Math.floor(totalCapitalRisk);
+        document.getElementById('percentChange').innerHTML = (percent >= 0 ? '+' : '') + percent.toFixed(2) + '%';
+        
+        let statsHtml = '';
+        for(let i=0; i<assetsStage4.length; i++) {
+            let a = assetsStage4[i];
+            let val = allocation[a.id];
+            let pct = (val / initialCapital * 100).toFixed(1);
+            statsHtml = statsHtml + '<div class="asset-stat-badge">' + a.icon + ' ' + a.short + ': ' + val + ' (' + pct + '%)</div>';
+        }
+        document.getElementById('assetStatsBar').innerHTML = statsHtml;
+        
+        document.getElementById('userNameDisplay').innerHTML = userInfo.name;
+        document.getElementById('userAgeDisplay').innerHTML = userInfo.age;
+        
+        let scenarioText = "";
+        if(selectedScenario === "war") scenarioText = "جنگی - تنش‌های سیاسی، بازار آشفته، پناهندگی به دارایی‌های امن";
+        else if(selectedScenario === "recession") scenarioText = "رکود - تورم بالا، نرخ بهره زیاد، کاهش قدرت خرید";
+        else scenarioText = "رونق فناوری - نوآوری بلاکچین، پذیرش گسترده، فرصت سود بالا";
+        document.getElementById('scenarioDisplay').innerHTML = scenarioText;
+    }
+    
+    function goToNextStageAfterRisk() {
+        let riskScore = 0;
+        for(let i=0; i<riskChoices.length; i++) {
+            if(riskChoices[i] === 'B') riskScore++;
+        }
+        let riskLevel = "";
+        if(riskScore <= 1) riskLevel = "بسیار محافظه‌کار";
+        else if(riskScore === 2) riskLevel = "محافظه‌کار";
+        else if(riskScore === 3) riskLevel = "متعادل";
+        else riskLevel = "ریسک‌پذیر";
+        
+        userInfo.riskScore = riskScore;
+        userInfo.riskLevel = riskLevel;
+        userInfo.riskProfit = 0;
+        for(let i=0; i<riskResults.length; i++) {
+            userInfo.riskProfit = userInfo.riskProfit + riskResults[i];
+        }
+        
+        renderQuizStage();
+    }
+    
+    function renderRiskStage() {
+        let step1 = document.getElementById('step1');
+        let step2 = document.getElementById('step2');
+        let step3 = document.getElementById('step3');
+        if(step1) {
+            step1.classList.remove('active');
+            step1.classList.add('completed');
+        }
+        if(step2) {
+            step2.classList.remove('active');
+            step2.classList.add('completed');
+        }
+        if(step3) {
+            step3.classList.remove('completed');
+            step3.classList.add('active');
+        }
+        
+        if(riskIndex >= riskQuestions.length) {
+            goToNextStageAfterRisk();
+            return;
+        }
+        
+        let q = riskQuestions[riskIndex];
+        let html = '<div class="info-box">';
+        html = html + '<div style="font-size:1.5rem; margin-bottom:5px;">📊 سوال ' + (riskIndex+1) + ' از ' + riskQuestions.length + '</div>';
+        html = html + '<div style="font-size:1.3rem; font-weight:bold; margin-bottom:20px;">' + q.text + '</div>';
+        html = html + '</div>';
+        html = html + '<div class="options-grid">';
+        html = html + '<div class="reaction-option" data-choice="A">';
+        html = html + '🛡️ گزینه امن (A)<br>';
+        html = html + '<span style="font-size:12px; color:#94a3b8;">با انتخاب این گزینه ماهانه ' + q.safeProfit + ' درصد سود مطمئن روی سرمایه افزوده میشود.</span>';
+        html = html + '</div>';
+        html = html + '<div class="reaction-option" data-choice="B">';
+        html = html + '⚡ گزینه ریسک‌پذیر (B)<br>';
+        html = html + '<span style="font-size:12px; color:#94a3b8;">با احتمال ' + q.riskyChance + ' درصد سود ' + q.riskyProfit + ' درصد ماهانه و با احتمال ' + (100 - q.riskyChance) + ' درصد بدون سود</span>';
+        html = html + '</div>';
+        html = html + '</div>';
+        html = html + '<div id="riskHint" style="margin-top:15px; padding:12px; background:rgba(0,0,0,0.3); border-radius:16px; font-size:13px; text-align:center;">';
+        html = html + '💡 انتخاب تو سطح ریسک‌پذیری و سود نهایی تو را مشخص می‌کند.';
+        html = html + '</div>';
+        
+        document.getElementById('stageContainerInner').innerHTML = html;
+        
+        let options = document.querySelectorAll('.reaction-option');
+        for(let i=0; i<options.length; i++) {
+            options[i].onclick = function() {
+                let choice = this.getAttribute('data-choice');
+                riskChoices.push(choice);
+                let profitGain = 0;
+                let profitMessage = "";
+                let currentQ = riskQuestions[riskIndex];
+                let oldTotal = totalCapitalRisk;
+                
+                if(choice === 'A') {
+                    profitGain = Math.floor(totalCapitalRisk * (currentQ.safeProfit / 100));
+                    profitMessage = "✨ شما گزینه امن (A) را انتخاب کردید. " + profitGain + " واحد سود (" + currentQ.safeProfit + "%) به سرمایه شما اضافه شد.";
+                    showFunToast("🛡️💰", "سود مطمئن!", profitGain + " واحد به سرمایه اضافه شد");
+                } else {
+                    let isLucky = Math.random() < (currentQ.riskyChance / 100);
+                    if(isLucky) {
+                        profitGain = Math.floor(totalCapitalRisk * (currentQ.riskyProfit / 100));
+                        profitMessage = "🍀 شما گزینه ریسک‌پذیر (B) را انتخاب کردید و خوش شانس بودید! " + profitGain + " واحد سود (" + currentQ.riskyProfit + "%) به سرمایه شما اضافه شد.";
+                        showFunToast("🍀💰", "شانس آوردی!", profitGain + " واحد سود گرفتی!");
+                    } else {
+                        profitGain = 0;
+                        profitMessage = "😔 شما گزینه ریسک‌پذیر (B) را انتخاب کردید اما این بار شانس نیاوردید. هیچ سودی به سرمایه اضافه نشد.";
+                        showFunToast("😔🎲", "شانس نیاوردی!", "هیچ سودی به سرمایه اضافه نشد");
+                    }
+                }
+                
+                totalCapitalRisk = totalCapitalRisk + profitGain;
+                riskResults.push(profitGain);
+                updateFixedInfoRisk();
+                
+                let totalChangePercent = ((totalCapitalRisk - oldTotal) / oldTotal) * 100;
+                
+                let hintBox = document.getElementById('riskHint');
+                if(hintBox) {
+                    hintBox.innerHTML = "💡 " + profitMessage + "<br>💰 سرمایه کل: " + Math.floor(oldTotal) + " → " + Math.floor(totalCapitalRisk) + " (" + (totalChangePercent >= 0 ? '+' : '') + totalChangePercent.toFixed(2) + "%)<br><br>✅ در حال رفتن به سوال بعدی...";
+                }
+                
+                let btns = document.querySelectorAll('.reaction-option');
+                for(let j=0; j<btns.length; j++) {
+                    btns[j].style.opacity = '0.5';
+                    btns[j].style.pointerEvents = 'none';
+                }
+                
+                setTimeout(function() {
+                    riskIndex++;
+                    renderRiskStage();
+                }, 2500);
+            };
+        }
+    }
+
+    function showQuizGuide() {
+        let guideDiv = document.createElement('div');
+        guideDiv.className = 'guide-overlay';
+        guideDiv.innerHTML = `
+            <div class="guide-card">
+                <h3>📖 راهنمای مرحله دانش مالی</h3>
+                <p>🎯 14 سوال در 5 بخش:<br>
+                📚 بخش1: دانش مالی (سوال1-5)<br>
+                📊 بخش2: نگرش مالی (6-7)<br>
+                🎯 بخش3: رفتار مالی (8-9)<br>
+                💻 بخش4: سواد دیجیتال (10)<br>
+                🧠 بخش5: ریسک و آینده (11-14)<br><br>
+                💡 هر پاسخ امتیاز دارد.<br>
+                🏆 حداکثر امتیاز: 50</p>
+                <button id="closeGuideBtn">شروع</button>
+            </div>
+        `;
+        document.body.appendChild(guideDiv);
+        document.getElementById('closeGuideBtn').onclick = function() {
+            guideDiv.remove();
+        };
+    }
+    
+    function updateFixedInfoQuiz() {
+        let total = allocation.bank + allocation.gold + allocation.dollar + allocation.stock + allocation.crypto;
+        let percent = ((total - initialCapital) / initialCapital) * 100;
+        
+        document.getElementById('currentCapital').innerHTML = Math.floor(total);
+        document.getElementById('percentChange').innerHTML = (percent >= 0 ? '+' : '') + percent.toFixed(2) + '%';
+        
+        let statsHtml = assetsStage4.map(a => {
+            let val = allocation[a.id];
+            let pct = (val / initialCapital * 100).toFixed(1);
+            return `<div class="asset-stat-badge">${a.icon} ${a.short}: ${val} (${pct}%)</div>`;
+        }).join('');
+        document.getElementById('assetStatsBar').innerHTML = statsHtml;
+        
+        document.getElementById('userNameDisplay').innerHTML = userInfo.name;
+        document.getElementById('userAgeDisplay').innerHTML = userInfo.age;
+        
+        let scenarioText = "";
+        if(selectedScenario === "war") scenarioText = "جنگی - تنش‌های سیاسی، بازار آشفته، پناهندگی به دارایی‌های امن";
+        else if(selectedScenario === "recession") scenarioText = "رکود - تورم بالا، نرخ بهره زیاد، کاهش قدرت خرید";
+        else scenarioText = "رونق فناوری - نوآوری بلاکچین، پذیرش گسترده، فرصت سود بالا";
+        document.getElementById('scenarioDisplay').innerHTML = scenarioText;
+    }
+    
+    function goToNextStageAfterQuiz() {
+        userInfo.quizScore = totalQuizScore;
+        userInfo.quizMaxScore = maxQuizScore;
+        userInfo.quizAnswers = quizAnswers;
+        renderResultStage();
+    }
+    
+    function renderQuizStage() {
+        let step1 = document.getElementById('step1');
+        let step2 = document.getElementById('step2');
+        let step3 = document.getElementById('step3');
+        let step4 = document.getElementById('step4');
+        if(step1) {
+            step1.classList.remove('active');
+            step1.classList.add('completed');
+        }
+        if(step2) {
+            step2.classList.remove('active');
+            step2.classList.add('completed');
+        }
+        if(step3) {
+            step3.classList.remove('active');
+            step3.classList.add('completed');
+        }
+        if(step4) {
+            step4.classList.remove('completed');
+            step4.classList.add('active');
+        }
+        
+        if(quizIndex >= quizQuestions.length) {
+            goToNextStageAfterQuiz();
+            return;
+        }
+        
+        let q = quizQuestions[quizIndex];
+        
+        let optionsHtml = '';
+        for(let i=0; i<q.options.length; i++) {
+            optionsHtml = optionsHtml + '<div class="quiz-option" data-opt="' + i + '">' + q.options[i] + '</div>';
+        }
+        
+        let html = '<div class="score-bar">';
+        html = html + '<div class="score-item">🏆 امتیاز شما: <strong>' + totalQuizScore + '</strong> از ' + maxQuizScore + '</div>';
+        html = html + '<div class="score-item">📊 سوال ' + (quizIndex+1) + ' از ' + quizQuestions.length + '</div>';
+        html = html + '</div>';
+        html = html + '<div class="section-badge">' + q.sectionName + '</div>';
+        html = html + '<div class="info-box">';
+        html = html + '<div class="question-text">' + q.text + '</div>';
+        html = html + '</div>';
+        html = html + '<div id="quizOptions">' + optionsHtml + '</div>';
+        html = html + '<div id="quizHint" style="margin-top:15px; padding:12px; background:rgba(0,0,0,0.3); border-radius:16px; font-size:13px; text-align:center;">';
+        html = html + '💡 روی گزینه مورد نظر کلیک کن';
+        html = html + '</div>';
+        
+        document.getElementById('stageContainerInner').innerHTML = html;
+        
+        let options = document.querySelectorAll('.quiz-option');
+        for(let i=0; i<options.length; i++) {
+            options[i].onclick = function() {
+                let selected = parseInt(this.getAttribute('data-opt'));
+                let gainedScore = q.scores[selected];
+                totalQuizScore = totalQuizScore + gainedScore;
+                
+                quizAnswers.push({ 
+                    section: q.sectionName,
+                    question: q.text, 
+                    answer: q.options[selected], 
+                    score: gainedScore
+                });
+                
+                let gainMessage = "✅ " + gainedScore + " امتیاز | مجموع: " + totalQuizScore;
+                showFunToast("🎉", "پاسخ ثبت شد!", gainMessage);
+                
+                let hintBox = document.getElementById('quizHint');
+                if(hintBox) {
+                    hintBox.innerHTML = "💡 " + gainMessage + "<br><br>✅ در حال رفتن به سوال بعدی...";
+                }
+                
+                let btns = document.querySelectorAll('.quiz-option');
+                for(let j=0; j<btns.length; j++) {
+                    btns[j].style.opacity = '0.5';
+                    btns[j].style.pointerEvents = 'none';
+                }
+                
+                setTimeout(function() {
+                    quizIndex++;
+                    renderQuizStage();
+                }, 1500);
+            };
+        }
+    }
+
+    function showResultGuide() {
+        let guideDiv = document.createElement('div');
+        guideDiv.className = 'guide-overlay';
+        guideDiv.innerHTML = `
+            <div class="guide-card">
+                <h3>📖 راهنمای نتیجه بازی</h3>
+                <p>🎯 در این صفحه شما می‌توانید:<br><br>
+                📊 مشاهده تیپ شخصیت مالی خود<br>
+                🎲 میزان ریسک‌پذیری خود را ببینید<br>
+                📋 جزئیات کامل عملکرد خود را بررسی کنید<br>
+                💡 توصیه‌های شخصی‌سازی شده دریافت کنید<br><br>
+                🔄 با کلیک روی دکمه "شروع مجدد" می‌توانید بازی را از اول شروع کنید<br>
+                🎭 با سناریوهای مختلف بازی کنید و تصمیمات خود را مقایسه کنید</p>
+                <button id="closeGuideBtn">شروع 🚀</button>
+            </div>
+        `;
+        document.body.appendChild(guideDiv);
+        document.getElementById('closeGuideBtn').onclick = () => {
+            guideDiv.remove();
+            resultGuideShown = true;
+            showEncourageToast();
+        };
+    }
+    
+    function showEncourageToast() {
+        let toast = document.createElement('div');
+        toast.className = 'fun-toast';
+        toast.innerHTML = `
+            <div class="emoji">🎭✨</div>
+            <div class="message">با سناریوهای دیگه هم امتحان کن!</div>
+            <div class="sub-message">هر سناریو شرایط متفاوتی داره. ببین توی شرایط جنگی، رکود یا رونق فناوری چه تصمیماتی می‌گیری و چقدر سود می‌کنی!<br><br>
+            🔥 سناریوی جنگی: دارایی‌های امن مثل طلا و دلار<br>
+            📉 سناریوی رکود: صندوق‌های درآمد ثابت و دلار<br>
+            🚀 سناریوی رونق فناوری: رمزارزها و سهام فناوری</div>
+            <button id="restartFromToastBtn" class="toast-button">🔄 شروع مجدد بازی</button>
+        `;
+        document.body.appendChild(toast);
+        document.getElementById('restartFromToastBtn').onclick = () => {
+            toast.remove();
+            location.reload();
+        };
+        setTimeout(() => {
+            if(document.querySelector('.fun-toast')) toast.remove();
+        }, 8000);
+    }
+    
+    function renderResultStage() {
+        let step1 = document.getElementById('step1');
+        let step2 = document.getElementById('step2');
+        let step3 = document.getElementById('step3');
+        let step4 = document.getElementById('step4');
+        let step5 = document.getElementById('step5');
+        if(step1) step1.classList.add('completed');
+        if(step2) step2.classList.add('completed');
+        if(step3) step3.classList.add('completed');
+        if(step4) step4.classList.add('completed');
+        if(step5) step5.classList.add('active');
+        
+        let finalTotalCapital = initialCapital;
+        for(let key in allocation) {
+            finalTotalCapital += allocation[key];
+        }
+        finalTotalCapital = finalTotalCapital + (userInfo.riskProfit || 0);
+        let finalProfitPercent = ((finalTotalCapital - initialCapital) / initialCapital) * 100;
+        let finalProfitAmount = finalTotalCapital - initialCapital;
+        
+        let finalRiskScore = userInfo.riskScore || 0;
+        let finalQuizScore = userInfo.quizScore || 0;
+        
+        let finalSelectedAssetsCount = 0;
+        let finalMaxAllocation = 0;
+        for(let key in allocation) {
+            if(allocation[key] > 0) finalSelectedAssetsCount++;
+            if(allocation[key] > finalMaxAllocation) finalMaxAllocation = allocation[key];
+        }
+        let finalConcentrationIndex = (finalMaxAllocation / initialCapital) * 100;
+        
+        function getFinalRiskCategory(score) {
+            if(score >= 3) return { name: "ریسک‌پذیر", color: "#ef4444" };
+            if(score === 2) return { name: "ریسک خنثی", color: "#fbbf24" };
+            return { name: "ریسک‌گریز", color: "#22c55e" };
+        }
+        
+        let finalRiskCategory = getFinalRiskCategory(finalRiskScore);
+        
+        function getFinalPersonality(riskScore, quizScore) {
+            let totalScore = (riskScore * 25) + (quizScore / 2);
+            if(totalScore >= 70) return { name: "ببر طوفان", emoji: "🐯🌪️", color: "#ef4444", slogan: "جسور، ریسک‌پذیر، فرصت‌طلب" };
+            if(totalScore >= 50) return { name: "روباه زرنگ", emoji: "🦊⚡", color: "#f97316", slogan: "هوشمند، پویا، متعادل" };
+            if(totalScore >= 30) return { name: "پنگوئن دانا", emoji: "🐧📚", color: "#3b82f6", slogan: "آهسته و پیوسته، امنیت محور" };
+            return { name: "لاک‌پشت خونه به دوش", emoji: "🐢🏠", color: "#22c55e", slogan: "امنیت مهم‌ترین است" };
+        }
+        
+        finalPersonality = getFinalPersonality(finalRiskScore, finalQuizScore);
+        
+        function getFinalKnowledgeLevel(score) {
+            if(score >= 40) return { name: "عالی", color: "#22c55e" };
+            if(score >= 30) return { name: "خوب", color: "#3b82f6" };
+            if(score >= 20) return { name: "متوسط", color: "#fbbf24" };
+            return { name: "نیاز به بهبود", color: "#ef4444" };
+        }
+        
+        let finalKnowledgeLevel = getFinalKnowledgeLevel(finalQuizScore);
+        
+        let finalReactionsHtml = "";
+        let finalReactionChoices = ["sell", "buy", "wait", "change"];
+        let finalAssetNames = ["طلا", "سهام", "دلار", "رمزارز"];
+        function getFinalReactionName(action) {
+            if(action === "sell") return "فروش همه";
+            if(action === "buy") return "خرید بیشتر";
+            if(action === "wait") return "صبر";
+            if(action === "change") return "تغییر استراتژی";
+            return action;
+        }
+        for(let i=0; i<finalReactionChoices.length; i++) {
+            finalReactionsHtml += `<span class="reaction-badge">${finalAssetNames[i]}: ${getFinalReactionName(finalReactionChoices[i])}</span>`;
+        }
+        
+        let finalPiePosition = "";
+        if(finalRiskScore >= 3) finalPiePosition = "🔴 در منطقه ریسک‌پذیر";
+        else if(finalRiskScore === 2) finalPiePosition = "🟡 در منطقه ریسک خنثی";
+        else finalPiePosition = "🟢 در منطقه ریسک‌گریز";
+        
+        // پیدا کردن سه شخصیت برتر
+        let allPersonalities = [
+            { name: "ببر طوفان", emoji: "🐯🌪️", color: "#ef4444", slogan: "جسور، ریسک‌پذیر، فرصت‌طلب" },
+            { name: "روباه زرنگ", emoji: "🦊⚡", color: "#f97316", slogan: "هوشمند، پویا، متعادل" },
+            { name: "پنگوئن دانا", emoji: "🐧📚", color: "#3b82f6", slogan: "آهسته و پیوسته، امنیت محور" },
+            { name: "لاک‌پشت خونه به دوش", emoji: "🐢🏠", color: "#22c55e", slogan: "امنیت مهم‌ترین است" }
+        ];
+        
+        let personalityScores = allPersonalities.map(p => {
+            let score = 0;
+            if(p.name === "ببر طوفان") score = (finalRiskScore * 25) + (finalQuizScore / 2);
+            else if(p.name === "روباه زرنگ") score = 50 + (finalRiskScore * 5) + (finalQuizScore / 5);
+            else if(p.name === "پنگوئن دانا") score = 30 + (finalRiskScore * 3) + (finalQuizScore / 8);
+            else score = 20 + (finalRiskScore * 2) + (finalQuizScore / 10);
+            return { ...p, score: Math.min(100, Math.max(0, score)) };
+        });
+        
+        personalityScores.sort((a, b) => b.score - a.score);
+        let topThree = personalityScores.slice(0, 3);
+        
+        let personalityHtml = `
+            <div style="background:rgba(0,0,0,0.2); border-radius:20px; padding:15px; margin:15px 0; text-align:center;">
+                <div style="font-size:1.1rem; color:#fbbf24; margin-bottom:10px;">🎭 شخصیت‌های نزدیک به شما:</div>
+                <div style="display:flex; justify-content:center; gap:15px; flex-wrap:wrap;">
+        `;
+        
+        topThree.forEach((p, idx) => {
+            personalityHtml += `
+                <div style="text-align:center; background:#1e293b; padding:10px 15px; border-radius:20px; border:2px solid ${p.color};">
+                    <div style="font-size:2rem;">${p.emoji}</div>
+                    <div style="font-weight:bold; color:${p.color};">${p.name}</div>
+                    <div style="font-size:11px; color:#94a3b8;">${p.slogan}</div>
+                    <div style="font-size:12px; margin-top:5px;">🎯 ${Math.round(p.score)}% تطابق</div>
+                </div>
+            `;
+        });
+        
+        personalityHtml += `
+                </div>
+                <div style="margin-top:15px; font-size:13px; color:#cbd5e1;">
+                    شما بیشترین شباهت را به شخصیت <strong style="color:${topThree[0].color};">«${topThree[0].name}»</strong> دارید.
+                </div>
+            </div>
+        `;
+        
+        let finalHtml = `
+            <div class="result-card" style="border-color: ${finalPersonality.color}">
+                <div class="personality-emoji">${finalPersonality.emoji}</div>
+                <div class="personality-name" style="color: ${finalPersonality.color};">${finalPersonality.name}</div>
+                <div class="personality-desc">${finalPersonality.slogan}</div>
+            </div>
+            
+            ${personalityHtml}
+            
+            <div class="score-box">
+                <div class="score-item-result">
+                    <div>🎲 دسته ریسک‌پذیری</div>
+                    <div class="score-value" style="color: ${finalRiskCategory.color}; font-size: 1.2rem;">${finalRiskCategory.name}</div>
+                    <div style="font-size: 11px;">${finalRiskScore} از 4 ریسک</div>
+                </div>
+                <div class="score-item-result">
+                    <div>📚 سطح دانش مالی</div>
+                    <div class="score-value" style="color: ${finalKnowledgeLevel.color}; font-size: 1.2rem;">${finalKnowledgeLevel.name}</div>
+                    <div style="font-size: 11px;">${finalQuizScore} از 50 امتیاز</div>
+                </div>
+                <div class="score-item-result">
+                    <div>💰 بازده نهایی</div>
+                    <div class="score-value" style="color: ${finalProfitPercent >= 0 ? '#22c55e' : '#ef4444'}; font-size: 1.2rem;">${finalProfitPercent >= 0 ? '+' : ''}${finalProfitPercent.toFixed(2)}%</div>
+                    <div style="font-size: 11px;">${finalProfitAmount >= 0 ? '+' : ''}${finalProfitAmount} واحد</div>
+                </div>
+            </div>
+            
+            <div class="advice-text">
+                <div class="advice-title">💡 تحلیل و توصیه‌های شخصی‌سازی شده</div>
+                
+                <p><strong style="color: #fbbf24;">🎲 بر اساس ریسک‌پذیری شما:</strong><br>${finalRiskScore >= 3 ? "شما ریسک‌پذیر هستید و به دنبال بازده بالاتر می‌روید. این ویژگی در بازارهای صعودی می‌تواند سود خوبی برای شما به همراه داشته باشد. اما در بازارهای نزولی باید محتاط باشید و همیشه از حد ضرر استفاده کنید. پیشنهاد می‌کنیم بخشی از سرمایه خود را در دارایی‌های امن مانند طلا و دلار نگهداری کنید." : (finalRiskScore === 2 ? "شما تعادل خوبی بین ریسک و بازده دارید. نه خیلی محافظه‌کار هستید و نه خیلی ریسک‌پذیر. این رویکرد متعادل معمولاً در بلندمدت نتایج پایدارتری به همراه دارد. می‌توانید با توجه به شرایط بازار، درصد ریسک خود را تغییر دهید." : "شما ریسک‌گریز هستید و تمایل به حفظ سرمایه دارید. این ویژگی در بازارهای پرنوسان از سرمایه شما محافظت می‌کند. اما ممکن است فرصت‌های سود خوب را از دست بدهید. پیشنهاد می‌کنیم با مطالعه بیشتر و افزایش دانش مالی، کمی ریسک‌پذیرتر شوید.")}</p>
+                
+                <p><strong style="color: #fbbf24;">📚 بر اساس سطح دانش مالی شما (${finalKnowledgeLevel.name}):</strong><br>${finalKnowledgeLevel.name === "عالی" ? "دانش مالی بالایی داری! می‌توانی تحلیل‌های پیچیده‌تری انجام دهی و تصمیمات بهتری بگیری." : (finalKnowledgeLevel.name === "خوب" ? "دانش مالی خوبی داری. با مطالعه بیشتر می‌توانی به سطح عالی برسی و سبد سرمایه‌گذاری موثرتری داشته باشی." : (finalKnowledgeLevel.name === "متوسط" ? "دانش مالی تو در سطح متوسط است. پیشنهاد می‌کنم کتاب‌های سرمایه‌گذاری و مفاهیم پایه مالی را مطالعه کنی." : "توصیه می‌کنم دوره‌های سواد مالی ببینی و با مفاهیم پایه سرمایه‌گذاری آشنا شوی. این کار به تو در تصمیمات مالی کمک زیادی می‌کند."))}</p>
+                
+                <p><strong style="color: #fbbf24;">🎯 بر اساس تنوع سبد سرمایه‌گذاری:</strong><br>${(finalSelectedAssetsCount < 3) ? "شما تنها " + finalSelectedAssetsCount + " دارایی را انتخاب کرده‌اید. تنوع‌بخشی به سبد سرمایه‌گذاری می‌تواند ریسک شما را کاهش دهد. پیشنهاد می‌کنیم در مراحل بعدی، دارایی‌های بیشتری را به سبد خود اضافه کنید." : "شما " + finalSelectedAssetsCount + " دارایی را انتخاب کرده‌اید. تنوع خوبی در سبد سرمایه‌گذاری داری! این کار ریسک تو را کاهش می‌دهد و در شرایط مختلف بازار عملکرد بهتری خواهی داشت."}</p>
+                
+                <p><strong style="color: #fbbf24;">💰 بر اساس بازده نهایی:</strong><br>${finalProfitPercent >= 0 ? "تبریک! شما " + finalProfitPercent.toFixed(2) + "% سود کرده‌اید. این نشان می‌دهد تصمیمات خوبی در طول بازی گرفته‌ای. برای حفظ این روند، همیشه به تنوع‌بخشی و مدیریت ریسک توجه کن." : "متأسفانه شما " + Math.abs(finalProfitPercent).toFixed(2) + "% ضرر کرده‌اید. نگران نباش! این یک بازی برای یادگیری است. دفعه بعد با دقت بیشتری تصمیم بگیر و از توصیه‌های بالا استفاده کن."}</p>
+                
+                <p><strong style="color: #fbbf24;">🎭 توصیه نهایی:</strong><br>با توجه به شخصیت "${topThree[0].name}"، پیشنهاد می‌کنیم در سرمایه‌گذاری‌های واقعی همیشه اصول مدیریت ریسک را رعایت کنی، هیچگاه تمام سرمایه را در یک دارایی نگذاری، و قبل از هر تصمیمی تحقیق کنی. موفق باشی! 🚀</p>
+            </div>
+            
+            <div class="button-group">
+                <button id="restartBtn" class="btn" style="background: linear-gradient(95deg, #8b5cf6, #6d28d9); padding: 12px 24px;">🔄 شروع مجدد بازی</button>
+                <button id="adminBtnResult" class="btn" style="background: linear-gradient(95deg, #f59e0b, #b45309); padding: 12px 24px;">👑 مشاهده پنل ادمین</button>
+            </div>
+        `;
+        
+        document.getElementById('stageContainerInner').innerHTML = finalHtml;
+        
+        document.getElementById('restartBtn').onclick = () => location.reload();
+        
+        document.getElementById('adminBtnResult').onclick = () => {
+            let pwd = prompt("🔐 رمز ادمین را وارد کنید:");
+            if (pwd === "admin123") {
+                document.getElementById('adminPanel').style.display = 'block';
+                loadAdminData();
+            } else if (pwd !== null) {
+                alert("رمز اشتباه است!");
+            }
+        };
+        
+        saveGameResultToAdmin();
+        showResultGuide();
+    }
+
+    // ==================== پنل ادمین (با جدا کردن داده‌های زنان و مردان برای همه بخش‌ها) ====================
+    let adminUsers = [];
+    let adminCurrentPage = 1;
+    let adminRowsPerPage = 10;
+
+    // تابع کمکی برای فیلتر بر اساس جنسیت
+    function filterUsersByGender(users, gender) {
+        if (gender === 'all') return users;
+        if (gender === 'male') return users.filter(u => u.gender === "مرد");
+        if (gender === 'female') return users.filter(u => u.gender === "زن");
+        return users;
+    }
+
+    // تابع نمایش آمار کلی
+    function renderAdminStats() {
+        let total = adminUsers.length;
+        let maleCount = adminUsers.filter(u => u.gender === "مرد").length;
+        let femaleCount = adminUsers.filter(u => u.gender === "زن").length;
+        let avgRisk = 0, avgQuiz = 0, avgProfit = 0, avgConcentration = 0, avgSharpe = 0;
+        
+        adminUsers.forEach(u => {
+            avgRisk += u.riskScore || 0;
+            avgQuiz += u.quizScore || 0;
+            avgProfit += parseFloat(u.profitPercent) || 0;
+            avgConcentration += parseFloat(u.concentrationIndex) || 0;
+            avgSharpe += parseFloat(u.sharpeRatio) || 0;
+        });
+        
+        avgRisk = total ? (avgRisk/total).toFixed(1) : 0;
+        avgQuiz = total ? (avgQuiz/total).toFixed(1) : 0;
+        avgProfit = total ? (avgProfit/total).toFixed(1) : 0;
+        avgConcentration = total ? (avgConcentration/total).toFixed(1) : 0;
+        avgSharpe = total ? (avgSharpe/total).toFixed(2) : 0;
+        
+        document.getElementById('statsContainer').innerHTML = `
+            <div class="stat-card"><div>👥 کل کاربران</div><div class="stat-value">${total}</div></div>
+            <div class="stat-card"><div>👨 مردان</div><div class="stat-value">${maleCount}</div></div>
+            <div class="stat-card"><div>👩 زنان</div><div class="stat-value">${femaleCount}</div></div>
+            <div class="stat-card"><div>🎲 میانگین ریسک</div><div class="stat-value">${avgRisk}/4</div></div>
+            <div class="stat-card"><div>📚 میانگین دانش</div><div class="stat-value">${avgQuiz}/50</div></div>
+            <div class="stat-card"><div>💰 میانگین سود</div><div class="stat-value" style="color:${avgProfit>=0?'#22c55e':'#ef4444'}">${avgProfit>=0?'+':''}${avgProfit}%</div></div>
+            <div class="stat-card"><div>🎯 شاخص تمرکز</div><div class="stat-value">${avgConcentration}%</div></div>
+            <div class="stat-card"><div>📈 نسبت شارپ</div><div class="stat-value">${avgSharpe}</div></div>
+        `;
+        
+        // رندر جدول خروجی برای اکسل
+        let exportHtml = '';
+        adminUsers.forEach(u => {
+            exportHtml += `
+                <tr>
+                    <td>${u.name || '-'}</td>
+                    <td>${u.age || '-'}</td>
+                    <td>${u.gender || '-'}</td>
+                    <td>${u.scenario === "war" ? "جنگی" : (u.scenario === "recession" ? "رکود" : "رونق")}</td>
+                    <td>${u.riskScore || 0}/4</td
+                    <td>${u.quizScore || 0}/50</td
+                    <td>${u.concentrationIndex || 0}%</td
+                    <td>${u.profitPercent || 0}%</td
+                    <td>${u.sharpeRatio || 0}</td
+                    <td>${u.personality || '-'}</td
+                </tr>
+            `;
+        });
+        document.getElementById('exportTableBody').innerHTML = exportHtml;
+        
+        // دکمه کپی جدول
+        document.getElementById('copyTableBtn').onclick = () => {
+            let table = document.getElementById('exportTable');
+            let range = document.createRange();
+            range.selectNode(table);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+            document.execCommand('copy');
+            window.getSelection().removeAllRanges();
+            showFunToast("📋✅", "جدول کپی شد!", "حالا می‌تونی در اکسل Paste کنی");
+        };
+    }
+
+    // ===== نمودار سنی =====
+    function renderAdminAgeChartForGender(gender) {
+        let filtered = filterUsersByGender(adminUsers, gender);
+        let ageGroups = { '۱۸-۲۵':0, '۲۶-۳۵':0, '۳۶-۴۵':0, '۴۶-۶۰':0, '۶۰+':0 };
+        filtered.forEach(u => {
+            let age = u.age;
+            if(ageGroups[age] !== undefined) ageGroups[age]++;
+            else if(age === "18-25") ageGroups["۱۸-۲۵"]++;
+            else if(age === "26-35") ageGroups["۲۶-۳۵"]++;
+            else if(age === "36-45") ageGroups["۳۶-۴۵"]++;
+            else if(age === "46-60") ageGroups["۴۶-۶۰"]++;
+            else if(age === "60+") ageGroups["۶۰+"]++;
+            else ageGroups["۲۶-۳۵"]++;
+        });
+        
+        let total = filtered.length;
+        let html = '';
+        let colors = ['#3b82f6', '#60a5fa', '#93c5fd', '#bfdbfe', '#dbeafe'];
+        let i = 0;
+        for(let age in ageGroups) {
+            let percent = total ? (ageGroups[age]/total*100).toFixed(1) : 0;
+            html += `<div>${age}: ${ageGroups[age]} نفر (${percent}%)</div>
+                    <div class="bar-container"><div class="bar-fill" style="width:${percent}%; background:${colors[i++ % colors.length]};">${percent}%</div></div>`;
+        }
+        document.getElementById('ageChart').innerHTML = html;
+    }
+
+    // ===== نمودار ریسک =====
+    function renderAdminRiskChartForGender(gender) {
+        let filtered = filterUsersByGender(adminUsers, gender);
+        let categories = { 'ریسک‌پذیر':0, 'ریسک خنثی':0, 'ریسک‌گریز':0 };
+        filtered.forEach(u => {
+            let score = u.riskScore || 0;
+            if(score >= 3) categories['ریسک‌پذیر']++;
+            else if(score === 2) categories['ریسک خنثی']++;
+            else categories['ریسک‌گریز']++;
+        });
+        let total = filtered.length;
+        let colors = { 'ریسک‌پذیر':'#ef4444', 'ریسک خنثی':'#fbbf24', 'ریسک‌گریز':'#22c55e' };
+        let html = '';
+        for(let cat in categories) {
+            let percent = total ? (categories[cat]/total*100).toFixed(1) : 0;
+            html += `<div>${cat}: ${categories[cat]} نفر (${percent}%)</div>
+                    <div class="bar-container"><div class="bar-fill" style="width:${percent}%; background:${colors[cat]};">${percent}%</div></div>`;
+        }
+        document.getElementById('riskChart').innerHTML = html;
+    }
+
+    // ===== نمودار دانش =====
+    function renderAdminQuizChartForGender(gender) {
+        let filtered = filterUsersByGender(adminUsers, gender);
+        let levels = { 'ضعیف (0-20)':0, 'متوسط (21-35)':0, 'خوب (36-50)':0 };
+        filtered.forEach(u => {
+            let q = u.quizScore || 0;
+            if(q <= 20) levels['ضعیف (0-20)']++;
+            else if(q <= 35) levels['متوسط (21-35)']++;
+            else levels['خوب (36-50)']++;
+        });
+        let total = filtered.length;
+        let html = '';
+        let colors = ['#ef4444', '#fbbf24', '#22c55e'];
+        let i = 0;
+        for(let l in levels) {
+            let percent = total ? (levels[l]/total*100).toFixed(1) : 0;
+            html += `<div>${l}: ${levels[l]} نفر (${percent}%)</div>
+                    <div class="bar-container"><div class="bar-fill" style="width:${percent}%; background:${colors[i++ % colors.length]};">${percent}%</div></div>`;
+        }
+        document.getElementById('quizChart').innerHTML = html;
+    }
+
+    // ===== نمودار سود =====
+    function renderAdminProfitChartForGender(gender) {
+        let filtered = filterUsersByGender(adminUsers, gender);
+        let levels = { 'ضرر (منفی)':0, 'سود کم (0-20%)':0, 'سود خوب (20-50%)':0, 'سود عالی (50-100%)':0 };
+        filtered.forEach(u => {
+            let p = parseFloat(u.profitPercent) || 0;
+            if(p < 0) levels['ضرر (منفی)']++;
+            else if(p <= 20) levels['سود کم (0-20%)']++;
+            else if(p <= 50) levels['سود خوب (20-50%)']++;
+            else levels['سود عالی (50-100%)']++;
+        });
+        let total = filtered.length;
+        let colors = ['#ef4444', '#f97316', '#fbbf24', '#22c55e'];
+        let i = 0;
+        let html = '';
+        for(let l in levels) {
+            let percent = total ? (levels[l]/total*100).toFixed(1) : 0;
+            html += `<div>${l}: ${levels[l]} نفر (${percent}%)</div>
+                    <div class="bar-container"><div class="bar-fill" style="width:${Math.min(100, percent)}%; background:${colors[i++ % colors.length]};">${percent}%</div></div>`;
+        }
+        document.getElementById('profitChart').innerHTML = html;
+    }
+
+    // ===== نمودار تخصیص دارایی (درصد سرمایه‌گذاری در هر دارایی) با تفکیک جنسیت =====
+    function renderAdminAllocationChartForGender(gender) {
+        let filtered = filterUsersByGender(adminUsers, gender);
+        if(filtered.length === 0) {
+            document.getElementById('allocationChart').innerHTML = '<div style="text-align:center;">داده‌ای برای نمایش وجود ندارد</div>';
+            return;
+        }
+        
+        // جمع کل سرمایه تخصیص داده شده به هر دارایی برای کاربران فیلتر شده
+        let totalAllocation = { bank:0, gold:0, dollar:0, stock:0, crypto:0 };
+        filtered.forEach(u => {
+            if(u.allocation) {
+                for(let key in totalAllocation) {
+                    totalAllocation[key] += u.allocation[key] || 0;
+                }
+            }
+        });
+        
+        let assetNames = ['بانک', 'طلا', 'دلار', 'سهام', 'ارز دیجیتال'];
+        let assetIcons = ['🏦', '🥇', '💵', '📊', '₿'];
+        let keys = ['bank', 'gold', 'dollar', 'stock', 'crypto'];
+        let html = '';
+        let colors = ['#8b5cf6', '#f59e0b', '#10b981', '#3b82f6', '#ef4444'];
+        for(let i=0; i<keys.length; i++) {
+            let total = totalAllocation[keys[i]];
+            html += `<div>${assetIcons[i]} ${assetNames[i]}: ${total} واحد</div>
+                    <div class="bar-container"><div class="bar-fill" style="width:${Math.min(100, total/10)}%; background:${colors[i]};">${total} واحد</div></div>`;
+        }
+        document.getElementById('allocationChart').innerHTML = html;
+    }
+
+    // ===== نمودار نسبت شارپ =====
+    function renderAdminSharpeChartForGender(gender) {
+        let filtered = filterUsersByGender(adminUsers, gender);
+        let levels = { 'ضعیف (<0)':0, 'متوسط (0-1)':0, 'خوب (1-2)':0, 'عالی (>2)':0 };
+        filtered.forEach(u => {
+            let s = parseFloat(u.sharpeRatio) || 0;
+            if(s < 0) levels['ضعیف (<0)']++;
+            else if(s <= 1) levels['متوسط (0-1)']++;
+            else if(s <= 2) levels['خوب (1-2)']++;
+            else levels['عالی (>2)']++;
+        });
+        let total = filtered.length;
+        let colors = ['#ef4444', '#f97316', '#fbbf24', '#22c55e'];
+        let i = 0;
+        let html = '';
+        for(let l in levels) {
+            let percent = total ? (levels[l]/total*100).toFixed(1) : 0;
+            html += `<div>${l}: ${levels[l]} نفر (${percent}%)</div>
+                    <div class="bar-container"><div class="bar-fill" style="width:${Math.min(100, percent)}%; background:${colors[i++ % colors.length]};">${percent}%</div></div>`;
+        }
+        document.getElementById('sharpeChart').innerHTML = html;
+    }
+
+    // ===== نمودار تیپ شخصیتی =====
+    function renderAdminPersonalityChartForGender(gender) {
+        let filtered = filterUsersByGender(adminUsers, gender);
+        let personalities = { 'ببر طوفان':0, 'روباه زرنگ':0, 'پنگوئن دانا':0, 'لاک‌پشت خونه به دوش':0 };
+        filtered.forEach(u => {
+            let p = u.personality;
+            if(personalities[p] !== undefined) personalities[p]++;
+            else personalities['روباه زرنگ']++;
+        });
+        let total = filtered.length;
+        let colors = ['#ef4444', '#f97316', '#3b82f6', '#22c55e'];
+        let i = 0;
+        let html = '';
+        for(let p in personalities) {
+            let percent = total ? (personalities[p]/total*100).toFixed(1) : 0;
+            html += `<div>${p}: ${personalities[p]} نفر (${percent}%)</div>
+                    <div class="bar-container"><div class="bar-fill" style="width:${Math.min(100, percent)}%; background:${colors[i++ % colors.length]};">${percent}%</div></div>`;
+        }
+        document.getElementById('personalityChart').innerHTML = html;
+    }
+
+    // تابع اصلی رندر همه نمودارها (با توجه به جنسیت انتخاب شده در هر تب)
+    function renderAdminCharts() {
+        let activeAgeGender = document.querySelector('#ageTabs .gender-btn-tab.active')?.dataset.gender || 'all';
+        let activeRiskGender = document.querySelector('#riskTabs .gender-btn-tab.active')?.dataset.gender || 'all';
+        let activeQuizGender = document.querySelector('#quizTabs .gender-btn-tab.active')?.dataset.gender || 'all';
+        let activeProfitGender = document.querySelector('#profitTabs .gender-btn-tab.active')?.dataset.gender || 'all';
+        let activeAllocationGender = document.querySelector('#allocationTabs .gender-btn-tab.active')?.dataset.gender || 'all';
+        let activeSharpeGender = document.querySelector('#sharpeTabs .gender-btn-tab.active')?.dataset.gender || 'all';
+        let activePersonalityGender = document.querySelector('#personalityTabs .gender-btn-tab.active')?.dataset.gender || 'all';
+        
+        renderAdminAgeChartForGender(activeAgeGender);
+        renderAdminRiskChartForGender(activeRiskGender);
+        renderAdminQuizChartForGender(activeQuizGender);
+        renderAdminProfitChartForGender(activeProfitGender);
+        renderAdminAllocationChartForGender(activeAllocationGender);
+        renderAdminSharpeChartForGender(activeSharpeGender);
+        renderAdminPersonalityChartForGender(activePersonalityGender);
+    }
+
+    // راه‌اندازی تب‌ها برای هر بخش
+    function setupTabs(tabContainerId, callback) {
+        const container = document.getElementById(tabContainerId);
+        if (!container) return;
+        const btns = container.querySelectorAll('.gender-btn-tab');
+        btns.forEach(btn => {
+            btn.onclick = () => {
+                btns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                callback();
+            };
+        });
+    }
+
+    function loadAdminData() {
+        let saved = localStorage.getItem('financialGameUsers');
+        if(saved) {
+            adminUsers = JSON.parse(saved);
+        } else {
+            adminUsers = [];
+        }
+        renderAdminStats();
+        
+        // راه‌اندازی همه تب‌ها
+        setupTabs('ageTabs', () => renderAdminAgeChartForGender(document.querySelector('#ageTabs .gender-btn-tab.active')?.dataset.gender || 'all'));
+        setupTabs('riskTabs', () => renderAdminRiskChartForGender(document.querySelector('#riskTabs .gender-btn-tab.active')?.dataset.gender || 'all'));
+        setupTabs('quizTabs', () => renderAdminQuizChartForGender(document.querySelector('#quizTabs .gender-btn-tab.active')?.dataset.gender || 'all'));
+        setupTabs('profitTabs', () => renderAdminProfitChartForGender(document.querySelector('#profitTabs .gender-btn-tab.active')?.dataset.gender || 'all'));
+        setupTabs('allocationTabs', () => renderAdminAllocationChartForGender(document.querySelector('#allocationTabs .gender-btn-tab.active')?.dataset.gender || 'all'));
+        setupTabs('sharpeTabs', () => renderAdminSharpeChartForGender(document.querySelector('#sharpeTabs .gender-btn-tab.active')?.dataset.gender || 'all'));
+        setupTabs('personalityTabs', () => renderAdminPersonalityChartForGender(document.querySelector('#personalityTabs .gender-btn-tab.active')?.dataset.gender || 'all'));
+        
+        renderAdminCharts();
+        renderAdminTable();
+    }
+
+    function renderAdminTable() {
+        let start = (adminCurrentPage - 1) * adminRowsPerPage;
+        let paginated = adminUsers.slice(start, start + adminRowsPerPage);
+        let html = '';
+        
+        paginated.forEach((u, idx) => {
+            let profitClass = parseFloat(u.profitPercent) >= 0 ? '#22c55e' : '#ef4444';
+            let profitSign = parseFloat(u.profitPercent) >= 0 ? '+' : '';
+            html += `
+                <tr>
+                    <td>${start + idx + 1}</td
+                    <td>${u.name || '-'}</td
+                    <td>${u.age || '-'}</td
+                    <td>${u.gender || '-'}</td
+                    <td>${u.scenario === "war" ? "🔥 جنگی" : (u.scenario === "recession" ? "📉 رکود" : "🚀 رونق")}</td
+                    <td>${u.riskScore || 0}/4</td
+                    <td>${u.quizScore || 0}/50</td
+                    <td>${u.concentrationIndex || 0}%</td
+                    <td style="color:${profitClass}">${profitSign}${u.profitPercent || 0}%</td
+                    <td>${u.sharpeRatio || 0}</td
+                    <td>${u.personality || '-'}</td
+                    <td><button class="deleteAdminUserBtn" data-idx="${start + idx}" style="background:#ef4444; border:none; padding:5px 10px; border-radius:20px; color:white; cursor:pointer;">🗑</button></td
+                </tr>
+            `;
+        });
+        
+        document.getElementById('tableBody').innerHTML = html;
+        
+        document.querySelectorAll('.deleteAdminUserBtn').forEach(btn => {
+            btn.onclick = () => {
+                let idx = parseInt(btn.dataset.idx);
+                if(confirm('حذف شود؟')) {
+                    adminUsers.splice(idx, 1);
+                    localStorage.setItem('financialGameUsers', JSON.stringify(adminUsers));
+                    loadAdminData();
+                }
+            };
+        });
+        
+        let totalPages = Math.ceil(adminUsers.length / adminRowsPerPage);
+        let pagHtml = '';
+        for(let i=1; i<=totalPages; i++) {
+            pagHtml += `<button class="page-btn ${i===adminCurrentPage ? 'active' : ''}" data-page="${i}">${i}</button>`;
+        }
+        document.getElementById('pagination').innerHTML = pagHtml;
+        
+        document.querySelectorAll('.page-btn').forEach(btn => {
+            btn.onclick = () => {
+                adminCurrentPage = parseInt(btn.dataset.page);
+                renderAdminTable();
+            };
+        });
+    }
+
+    function addSampleDataToAdmin() {
+        let sampleRisk = Math.floor(Math.random() * 5);
+        let sampleQuiz = Math.floor(Math.random() * 51);
+        let sampleProfit = (Math.random() * 80 - 30).toFixed(1);
+        let samplePersonality = ["ببر طوفان", "روباه زرنگ", "پنگوئن دانا", "لاک‌پشت خونه به دوش"][Math.floor(Math.random() * 4)];
+        let sampleAge = ["۱۸-۲۵", "۲۶-۳۵", "۳۶-۴۵", "۴۶-۶۰", "۶۰+"][Math.floor(Math.random() * 5)];
+        let newUser = {
+            name: "کاربر نمونه " + (adminUsers.length + 1),
+            age: sampleAge,
+            gender: Math.random() > 0.5 ? "مرد" : "زن",
+            scenario: ["war", "recession", "tech"][Math.floor(Math.random() * 3)],
+            riskScore: sampleRisk,
+            quizScore: sampleQuiz,
+            concentrationIndex: (Math.random() * 70 + 20).toFixed(1),
+            profitPercent: sampleProfit,
+            sharpeRatio: calculateSharpeRatio(parseFloat(sampleProfit), sampleRisk),
+            personality: samplePersonality,
+            allocation: { bank: Math.floor(Math.random() * 400), gold: Math.floor(Math.random() * 400), dollar: Math.floor(Math.random() * 400), stock: Math.floor(Math.random() * 300), crypto: Math.floor(Math.random() * 300) }
+        };
+        adminUsers.push(newUser);
+        localStorage.setItem('financialGameUsers', JSON.stringify(adminUsers));
+        loadAdminData();
+        alert("داده نمونه اضافه شد!");
+    }
+
+    function exportAdminJSON() {
+        let dataStr = JSON.stringify(adminUsers, null, 2);
+        let blob = new Blob([dataStr], {type: 'application/json'});
+        let url = URL.createObjectURL(blob);
+        let a = document.createElement('a');
+        a.href = url;
+        a.download = `users_data_${new Date().toISOString().slice(0,19)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function exportAdminExcel() {
+        let html = '<table border="1"><tr><th>ردیف</th><th>نام</th><th>سن</th><th>جنسیت</th><th>سناریو</th><th>ریسک</th><th>دانش</th><th>تمرکز%</th><th>سود%</th><th>نسبت شارپ</th><th>تیپ شخصیتی</th></tr>';
+        adminUsers.forEach((u, idx) => {
+            html += `<tr>
+                <td>${idx+1}</td
+                <td>${u.name}</td
+                <td>${u.age}</td
+                <td>${u.gender}</td
+                <td>${u.scenario === "war" ? "جنگی" : (u.scenario === "recession" ? "رکود" : "رونق")}</td
+                <td>${u.riskScore}/4</td
+                <td>${u.quizScore}/50</td
+                <td>${u.concentrationIndex}%</td
+                <td>${u.profitPercent}%</td
+                <td>${u.sharpeRatio}</td
+                <td>${u.personality}</td
+            </tr>`;
+        });
+        html += '</table>';
+        let blob = new Blob([html], {type: 'application/vnd.ms-excel'});
+        let url = URL.createObjectURL(blob);
+        let a = document.createElement('a');
+        a.href = url;
+        a.download = `users_data_${new Date().toISOString().slice(0,19)}.xls`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function exportAdminCSV() {
+        let headers = ['ردیف','نام','سن','جنسیت','سناریو','ریسک','دانش','تمرکز%','سود%','نسبت شارپ','تیپ شخصیتی'];
+        let rows = [headers];
+        adminUsers.forEach((u, idx) => {
+            rows.push([idx+1, u.name, u.age, u.gender, u.scenario === "war" ? "جنگی" : (u.scenario === "recession" ? "رکود" : "رونق"), u.riskScore+"/4", u.quizScore+"/50", u.concentrationIndex, u.profitPercent, u.sharpeRatio, u.personality]);
+        });
+        let csvContent = rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(',')).join('\n');
+        let blob = new Blob(["\uFEFF" + csvContent], {type: 'text/csv;charset=utf-8;'});
+        let url = URL.createObjectURL(blob);
+        let a = document.createElement('a');
+        a.href = url;
+        a.download = `users_data_${new Date().toISOString().slice(0,19)}.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    function clearAllAdminData() {
+        if(confirm('همه داده‌ها حذف شود؟ این عمل غیرقابل بازگشت است!')) {
+            adminUsers = [];
+            localStorage.setItem('financialGameUsers', JSON.stringify(adminUsers));
+            loadAdminData();
+        }
+    }
+
+    document.getElementById('nextBtn').onclick = () => {
+        let name = document.getElementById('userName').value.trim();
+        if (!name) { alert("نام خود را وارد کن"); return; }
+        if (!selectedGender) { alert("جنسیت را انتخاب کن"); return; }
+        if (!selectedAge) { alert("بازه سنی را انتخاب کن"); return; }
+        
+        userInfo = { name, gender: selectedGender === "male" ? "مرد" : "زن", age: selectedAge };
+        renderStage2();
+    };
+
+    document.getElementById('adminBtn').onclick = () => {
+        let pwd = prompt("🔐 رمز ادمین را وارد کنید:");
+        if (pwd === "admin123") {
+            document.getElementById('adminPanel').style.display = 'block';
+            loadAdminData();
+        } else if (pwd !== null) {
+            alert("رمز اشتباه است!");
+        }
+    };
+
+    document.getElementById('showDataBtn').onclick = () => {
+        let saved = localStorage.getItem('financialGameUsers');
+        if(saved) {
+            let users = JSON.parse(saved);
+            alert(`${users.length} کاربر در دیتابیس ذخیره شده است.\nبرای مشاهده دقیق، پنل ادمین را باز کنید.`);
+        } else {
+            alert("هیچ داده‌ای ذخیره نشده است. ابتدا بازی را کامل کنید!");
+        }
+    };
+
+    document.getElementById('closeAdminPanel').onclick = () => {
+        document.getElementById('adminPanel').style.display = 'none';
+    };
+
+    document.getElementById('addSampleData').onclick = addSampleDataToAdmin;
+    document.getElementById('exportJSON').onclick = exportAdminJSON;
+    document.getElementById('exportExcel').onclick = exportAdminExcel;
+    document.getElementById('exportCSV').onclick = exportAdminCSV;
+    document.getElementById('clearAllData').onclick = clearAllAdminData;
+
+    showGuide(1, "ابتدا نام، جنسیت و بازه سنی خود را وارد کنید. این اطلاعات برای شخصی‌سازی نتایج استفاده می‌شود.");
+</script>
+
+</body>
+</html>
